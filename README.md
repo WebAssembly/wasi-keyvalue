@@ -22,38 +22,38 @@ Implementations available for at least Windows, Linux & MacOS.
 
 A testsuite that passes on the platforms and implementations mentioned above.
 
-## Table of Contents [if the explainer is longer than one printed page]
+## Table of Contents
 
-- [[WASI Key-Value Store]](#wasi-key-value-store)
+- [WASI Key-Value Store](#wasi-key-value-store)
     - [Current Phase](#current-phase)
     - [Champions](#champions)
     - [Phase 4 Advancement Criteria](#phase-4-advancement-criteria)
-  - [Table of Contents [if the explainer is longer than one printed page]](#table-of-contents-if-the-explainer-is-longer-than-one-printed-page)
+  - [Table of Contents](#table-of-contents)
     - [Introduction](#introduction)
-    - [Goals [or Motivating Use Cases, or Scenarios]](#goals-or-motivating-use-cases-or-scenarios)
+    - [Goals](#goals)
     - [Non-goals](#non-goals)
     - [API walk-through](#api-walk-through)
-      - [[Use case 1]](#use-case-1)
+      - [Use case 1](#use-case-1)
     - [Detailed design discussion](#detailed-design-discussion)
-      - [[Tricky design choice #1]](#tricky-design-choice-1)
-      - [[Tricky design choice 2]](#tricky-design-choice-2)
+      - [Tricky design choice 1](#tricky-design-choice-1)
+      - [Tricky design choice 2](#tricky-design-choice-2)
     - [Considered alternatives](#considered-alternatives)
-      - [[Alternative 1]](#alternative-1)
-      - [[Alternative 2]](#alternative-2)
+      - [Alternative 1](#alternative-1)
+      - [Alternative 2](#alternative-2)
     - [Stakeholder Interest & Feedback](#stakeholder-interest--feedback)
     - [References & acknowledgements](#references--acknowledgements)
 
 ### Introduction
 
-WASI Key-Value Store is a WASI API primarily for accessing a key-value datastore. It has functions to
+WASI Key-Value Store is a WASI API primarily for accessing a key-value datastore. It has functions to:
 
-1. retrive the value stored and associated with a key
-2. delete the value stored and associated with a key
-3. create and update a key-value pair
+1. retrieve the value stored and associated with a key,
+2. delete a key-value pair, and
+3. create and update a key-value pair.
 
-The API is designed to hide data-plane differences between different key-value stores. It's control-plane behaviors, including cluster management, data consistency, replication, and sharding, are not specified, and are provider specific.
+The API is designed to hide data-plane differences between different key-value stores. The control-plane behavior/functionality (e.g., including cluster management, data consistency, replication, and sharding) are not specified, and are provider specific.
 
-### Goals [or Motivating Use Cases, or Scenarios]
+### Goals
 
 The primary goal of this API is to allow users to use WASI programs to access key-value stores. It abstracts away the complexity of building stateful services that need to access key-value stores. In other words, it decouples the application code from the specific key-value store APIs. This allows WASI programs to be portable across different key-value store that supports this interface, be it on-prem, in the cloud, or in edge devices.
 
@@ -70,9 +70,9 @@ The second goal of this API is to abstract away the network stack, allowing appl
 
 ### API walk-through
 
-#### [Use case 1]
+#### Use case 1
 
-Imagine you have a HTTP handler that needs to persistent some data to a persistent key-value store. The handler needs to be able to retrieve the data from the key-value store, and update the data in the key-value store. The handler also needs to be able to delete the data from the key-value store. The following rust code shows how you can use the WASI Key-Value Store API to in the handler.
+Imagine you have an HTTP handler that needs to persist some data to a key-value store. The handler needs to be able to retrieve, delete, and update the data in the key-value store. The following Rust code shows how you can use the WASI Key-Value Store API to in the handler.
 
 ```rust
 let value = b"spiderlightning";
@@ -161,11 +161,11 @@ world "wasi:cloud/kv" {
 }
 ```
 
-#### [Tricky design choice #1]
+#### Tricky design choice 1
 
 TODO
 
-#### [Tricky design choice 2]
+#### Tricky design choice 2
 
 TODO
 
@@ -173,10 +173,10 @@ TODO
 
 TODO
 
-#### [Alternative 1]
+#### Alternative 1
 
 TODO
-#### [Alternative 2]
+#### Alternative 2
 
 TODO
 
