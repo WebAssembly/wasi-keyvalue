@@ -62,6 +62,7 @@ The second goal of this API is to abstract away the network stack, allowing appl
 ### Non-goals
 
 - Cover all application requirements for a key-value store. Instead, it focuses on the most common use cases. It allows providers to extend the API to support more use cases.
+- Transactional semantics.
 - Data consistency.
 - Data replication.
 - Data sharding.
@@ -75,7 +76,7 @@ The second goal of this API is to abstract away the network stack, allowing appl
 Imagine you have an HTTP handler that needs to persist some data to a key-value store. The handler needs to be able to retrieve, delete, and update the data in the key-value store. The following Rust code shows how you can use the WASI Key-Value Store API to in the handler.
 
 ```rust
-let value = b"spiderlightning";
+let value = b"value1";
 kv1::create_or_update("key", value)?;
 let val = kv1::get("key")?;
 assert_eq!(val, value);
@@ -144,6 +145,9 @@ interface "wasi:kv/types" {
   type keys = stream<key>
 }
 ```
+
+- The `bulk-get` and `bulk-create-or-update` are not atomic.
+- The `increment` is atomic, in a way that it is a small transaction of get, increment, and put operations on the same key.
 
 ```go
 world "wasi:cloud/services" {
