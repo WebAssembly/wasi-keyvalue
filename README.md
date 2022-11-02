@@ -7,6 +7,7 @@ A proposed [WebAssembly System Interface](https://github.com/WebAssembly/WASI) A
 Phase 1
 
 ### Champions
+
 - Dan Chiarlone
 - David Justice
 - Jiaxiao Zhou
@@ -45,6 +46,7 @@ A testsuite that passes on the platforms and implementations mentioned above.
 ### Introduction
 
 WASI Key-Value Store is a WASI API primarily for accessing a key-value datastore. It has functions to
+
 1. retrive the value stored and associated with a key
 2. delete the value stored and associated with a key
 3. create and update a key-value pair
@@ -66,9 +68,6 @@ The second goal of this API is to abstract away the network stack, allowing appl
 - Cluster management.
 - Monitoring
 
-
-
-
 ### API walk-through
 
 #### [Use case 1]
@@ -77,7 +76,7 @@ Imagine you have a HTTP handler that needs to persistent some data to a persiste
 
 ```rust
 let value = b"spiderlightning";
-kv1::put("key", value)?;
+kv1::create_or_update("key", value)?;
 let val = kv1::get("key")?;
 assert_eq!(val, value);
 
@@ -88,39 +87,39 @@ kv1::delete("key")?;
 
 ```go
 interface "wasi:kv/data/crud" {
-  use { Error, payload, payload_stream } from "wasi:kv/types"
+  use { Error, payload, key } from "wasi:kv/types"
 
-	get: func(key: string) -> result<payload_stream, Error>
+  get: func(key: key) -> result<payload, Error>
 
-  put: func(key: string, value: payload_stream) -> result<_, Error>
+  create-or-update: func(key: key, value: stream<u8>) -> result<_, Error>
 
-  del: func(key: string) -> result<_, Error>
+  delete: func(key: key) -> result<_, Error>
 }
 
 interface "wasi:kv/data/increment" {
-  use { Error, payload, payload_stream } from "wasi:kv/types"
+  use { Error, key } from "wasi:kv/types"
   
-	incr: func(key: string) -> result<u64, Error>
+  increment: func(key: key) -> result<u64, Error>
 }
 
 interface "wasi:kv/data/bulk-get" {
-  use { Error, payload, payload_stream } from "wasi:kv/types"
+  use { Error, payload } from "wasi:kv/types"
   
-	bulk-get: func(keys: stream<string>) -> result<stream<(key, payload_stream)>, Error>
+  bulk-get: func(keys: keys) -> result<payload, Error>
 
-  keys: func() -> result<future<list<string>>, Error>
+  keys: func() -> result<keys, Error>
 }
 
 interface "wasi:kv/data/bulk-put" {
-  use { Error, payload, payload_stream } from "wasi:kv/types"
+  use { Error, key } from "wasi:kv/types"
   
-	bulk-put: func(key_values: stream<(string, payload)>) -> result<unit, Error>
+  bulk-create-or-update: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
 }
 
 interface "wasi:kv/data/ttl" {
-  use { Error, payload, payload_stream } from "wasi:kv/types"
+  use { Error, key } from "wasi:kv/types"
   
-	put-with-ttl: func(key: string, value: payload, ttl: u64) -> result<unit, Error>
+  create-or-update-with-ttl: func(key: key, value: stream<u8>, ttl: u64) -> result<_, Error>
 }
 
 interface "wasi:kv/data/query" { 
@@ -129,21 +128,30 @@ interface "wasi:kv/data/query" {
 
 
 interface "wasi:kv/types" {
-	resource Error { ... }
+  resource Error { 
+    trace: func() -> string
 
-  type payload_stream = stream<u8>
-	type payload = list<u8>
+    // possibly more methods
+  }
+  resource payload {
+    consume_async: func() -> result<stream<u8>, Error>
+    consume_sync: func() -> result<list<u8>, Error>
+
+    // possibly more methods, like consume_async_with_key that returns a key payload pair `(key, stream<u8>)`
+  }
+
+  type key = string
+  type keys = stream<key>
 }
 ```
 
-
 ```go
 world "wasi:cloud/services" {
-		import kv: {*: "wasi:cloud/kv"}
-    import mq: {*: "wasi:cloud/mq"}
-    ...
+  import kv: {*: "wasi:cloud/kv"}
+  import mq: {*: "wasi:cloud/mq"}
+  ...
 
-    export http: "wasi:http/handler"
+  export http: "wasi:http/handler"
 }
 
 world "wasi:cloud/kv" {
