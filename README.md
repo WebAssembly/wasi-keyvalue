@@ -105,7 +105,7 @@ interface "wasi:kv/data/increment" {
 interface "wasi:kv/data/bulk-get" {
   use { Error, payload } from "wasi:kv/types"
   
-  bulk-get: func(keys: keys) -> result<payload, Error>
+  bulk-get: func(keys: keys) -> result<stream<payload>, Error>
 
   keys: func() -> result<keys, Error>
 }
