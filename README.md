@@ -77,7 +77,7 @@ Imagine you have an HTTP handler that needs to persist some data to a key-value 
 
 ```rust
 let value = b"value1";
-kv1::create_or_update("key", value)?;
+kv1::set("key", value)?;
 let val = kv1::get("key")?;
 assert_eq!(val, value);
 
@@ -87,46 +87,51 @@ kv1::delete("key")?;
 ### Detailed design discussion
 
 ```go
-interface "wasi:kv/data/crud" {
+interface "wasi:kv/data/readwrite" {
   use { Error, payload, key } from "wasi:kv/types"
 
   get: func(key: key) -> result<payload, Error>
 
-  create-or-update: func(key: key, value: stream<u8>) -> result<_, Error>
+  set: func(key: key, value: stream<u8>) -> result<_, Error>
 
   delete: func(key: key) -> result<_, Error>
+
+  exists: func(key: key) -> result<bool, Error>
 }
 
-interface "wasi:kv/data/increment" {
+interface "wasi:kv/data/atomic" {
   use { Error, key } from "wasi:kv/types"
   
+  // atomically increments the value at key by one. 
+  // The value must be an integer.
   increment: func(key: key) -> result<u64, Error>
+
+  // compare and swap (CAS) is an atomic operation that compares the value of a key 
+  // with a given value and, if they are equal, updates that key to a new value.
+  // This is useful for achieving synchronization between multiple processes.
+  compare_and_swap: func(key: key, old: u64, new: u64) -> result<bool, Error>
 }
 
-interface "wasi:kv/data/bulk-get" {
+interface "wasi:kv/data/get-many" {
+  // get_many returns a stream of key-value pairs.
+  // Notice hat this interface is non-atomic, meaning that the key-value pairs
+  // returned may not be consistent.
+
   use { Error, payload } from "wasi:kv/types"
   
-  bulk-get: func(keys: keys) -> result<stream<payload>, Error>
+  get-many: func(keys: keys) -> result<stream<payload>, Error>
 
   keys: func() -> result<keys, Error>
 }
 
-interface "wasi:kv/data/bulk-put" {
+interface "wasi:kv/data/set-many" {
+  // set_many sets multiple key-value pairs.
+  // Notice that this interface is non-atomic, meaning that the key-value pairs
+  // may not be consistent.
   use { Error, key } from "wasi:kv/types"
   
-  bulk-create-or-update: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
+  set-many: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
 }
-
-interface "wasi:kv/data/ttl" {
-  use { Error, key } from "wasi:kv/types"
-  
-  create-or-update-with-ttl: func(key: key, value: stream<u8>, ttl: u64) -> result<_, Error>
-}
-
-interface "wasi:kv/data/query" { 
-  ...
-}
-
 
 interface "wasi:kv/types" {
   resource Error { 
@@ -146,8 +151,8 @@ interface "wasi:kv/types" {
 }
 ```
 
-- The `bulk-get` and `bulk-create-or-update` are not atomic.
-- The `increment` is atomic, in a way that it is a small transaction of get, increment, and put operations on the same key.
+- The `bulk-get` and `bulk-set` are atomic.
+- The `increment` is atomic, in a way that it is a small transaction of get, increment, and set operations on the same key.
 
 ```go
 world "wasi:cloud/services" {
@@ -162,6 +167,30 @@ world "wasi:cloud/kv" {
   import kv: {*: "wasi:kv/data/crud"}
   
   export http: "wasi:http/handler"
+}
+```
+
+The following interfaces are still under discussion:
+
+```go
+interface "wasi:kv/data/transaction" {
+  // transaction is an atomic operation that groups multiple operations together.
+  // If any operation fails, all operations in the transaction are rolled back.
+  use { Error, payload, key } from "wasi:kv/types"
+
+  bulk-get: func(keys: keys) -> result<stream<payload>, Error>
+  
+  bulk-set: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
+}
+
+interface "wasi:kv/data/ttl" {
+  use { Error, key } from "wasi:kv/types"
+  
+  set-with-ttl: func(key: key, value: stream<u8>, ttl: u64) -> result<_, Error>
+}
+
+interface "wasi:kv/data/query" { 
+  ...
 }
 ```
 
