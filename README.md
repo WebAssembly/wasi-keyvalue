@@ -138,17 +138,56 @@ interface "wasi:kv/data/set-many" {
   set-many: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
 }
 
+interface "wasi:kv/data/range" {
+  // request using a range of keys
+  use { Error, payload, key-range, key-value } from "wasi:kv/types"
+
+  // returns keys within the range
+  get-keys: func(range: key-range) -> result<stream<key>, Error>
+
+  // returns key-value tuples within the key range
+  get-range: func(range: key-range) -> Result<stream<key-value>, Error>
+
+  // returns the number of keys that match the range
+  count-range: func(range: key-range) -> result<u64, Error>
+
+  // deletes keys that match the range
+  delete-range: func(range: key-range) -> result<_, Error>
+}
+
 interface "wasi:kv/types" {
   resource Error { 
     trace: func() -> string
 
     // possibly more methods
   }
+
   resource payload {
     consume_async: func() -> result<stream<u8>, Error>
     consume_sync: func() -> result<list<u8>, Error>
     size: func() -> result<u64, Error>
     // possibly more methods, like consume_async_with_key that returns a key payload pair `(key, stream<u8>)`
+  }
+
+  // a combination of key and value
+  record key-value {
+    key: string,
+    value: payload,
+  }
+
+  // specification for a range of keys in a wasi:kv/data/range request
+  union key-range {
+    // All keys
+    all,
+    // All keys beginning with the prefix.
+    // For example, "s" returns all keys staring with s
+    prefix(string),
+    // Interval is a half-open interval.
+    // For example, interval("a","d") would return all keys starting with "a", "b", or "c"
+    interval(string,string),
+    // Inclusive is a closed interval including both endpoints
+    // For example, if keys are [ "a", "b", "c" ], interval("a","c") returns ["a","b","c"]
+    inclusive(string,string),
   }
 
   type key = string
