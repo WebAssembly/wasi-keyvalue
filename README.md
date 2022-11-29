@@ -40,8 +40,9 @@ A testsuite that passes on the platforms and implementations mentioned above.
     - [Considered alternatives](#considered-alternatives)
       - [Alternative 1](#alternative-1)
       - [Alternative 2](#alternative-2)
-    - [Stakeholder Interest & Feedback](#stakeholder-interest--feedback)
-    - [References & acknowledgements](#references--acknowledgements)
+    - [Stakeholder Interest \& Feedback](#stakeholder-interest--feedback)
+    - [References \& acknowledgements](#references--acknowledgements)
+    - [Change log](#change-log)
 
 ### Introduction
 
@@ -90,12 +91,16 @@ kv1::delete("key")?;
 interface "wasi:kv/data/readwrite" {
   use { Error, payload, key } from "wasi:kv/types"
 
+  // Get retrieves the value associated with the given key. It returns an Error if the key does not exist.
   get: func(key: key) -> result<payload, Error>
 
+  // set creates a new key-value pair or updates an existing key-value pair.
   set: func(key: key, value: stream<u8>) -> result<_, Error>
 
+  // delete a key-value pair. If the key does not exist, it returns an Ok() result.
   delete: func(key: key) -> result<_, Error>
 
+  // check if the key exists.
   exists: func(key: key) -> result<bool, Error>
 }
 
@@ -121,7 +126,7 @@ interface "wasi:kv/data/get-many" {
   
   get-many: func(keys: keys) -> result<stream<payload>, Error>
 
-  keys: func() -> result<keys, Error>
+  get-keys: func() -> result<keys, Error>
 }
 
 interface "wasi:kv/data/set-many" {
@@ -142,7 +147,7 @@ interface "wasi:kv/types" {
   resource payload {
     consume_async: func() -> result<stream<u8>, Error>
     consume_sync: func() -> result<list<u8>, Error>
-
+    size: func() -> result<u64, Error>
     // possibly more methods, like consume_async_with_key that returns a key payload pair `(key, stream<u8>)`
   }
 
@@ -151,7 +156,7 @@ interface "wasi:kv/types" {
 }
 ```
 
-- The `bulk-get` and `bulk-set` are atomic.
+- The `get-many` and `set-many` are atomic.
 - The `increment` is atomic, in a way that it is a small transaction of get, increment, and set operations on the same key.
 
 ```go
@@ -178,9 +183,9 @@ interface "wasi:kv/data/transaction" {
   // If any operation fails, all operations in the transaction are rolled back.
   use { Error, payload, key } from "wasi:kv/types"
 
-  bulk-get: func(keys: keys) -> result<stream<payload>, Error>
+  get-multi: func(keys: keys) -> result<stream<payload>, Error>
   
-  bulk-set: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
+  set-multi: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
 }
 
 interface "wasi:kv/data/ttl" {
@@ -224,3 +229,7 @@ Many thanks for valuable feedback and advice from:
 - [Person 1]
 - [Person 2]
 - [etc.]
+
+### Change log
+- 2022-11-29: renamed `bulk-get` to `get-multi` and `bulk-set` to `set-multi` to be consistent with the naming convention of the other interfaces.
+- 2022-10-31: Initial draft
