@@ -106,12 +106,12 @@ interface "wasi:kv/data/readwrite" {
 
 interface "wasi:kv/data/atomic" {
   use { Error, key } from "wasi:kv/types"
-  
-  // atomically increments the value at key by one. 
+
+  // atomically increments the value at key by one.
   // The value must be an integer.
   increment: func(key: key) -> result<u64, Error>
 
-  // compare and swap (CAS) is an atomic operation that compares the value of a key 
+  // compare and swap (CAS) is an atomic operation that compares the value of a key
   // with a given value and, if they are equal, updates that key to a new value.
   // This is useful for achieving synchronization between multiple processes.
   compare_and_swap: func(key: key, old: u64, new: u64) -> result<bool, Error>
@@ -123,7 +123,7 @@ interface "wasi:kv/data/get-many" {
   // returned may not be consistent.
 
   use { Error, payload } from "wasi:kv/types"
-  
+
   get-many: func(keys: keys) -> result<stream<payload>, Error>
 
   get-keys: func() -> result<keys, Error>
@@ -134,7 +134,7 @@ interface "wasi:kv/data/set-many" {
   // Notice that this interface is non-atomic, meaning that the key-value pairs
   // may not be consistent.
   use { Error, key } from "wasi:kv/types"
-  
+
   set-many: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
 }
 
@@ -156,7 +156,7 @@ interface "wasi:kv/data/range" {
 }
 
 interface "wasi:kv/types" {
-  resource Error { 
+  resource Error {
     trace: func() -> string
 
     // possibly more methods
@@ -179,15 +179,23 @@ interface "wasi:kv/types" {
   union key-range {
     // All keys
     all,
+
     // All keys beginning with the prefix.
     // For example, "s" returns all keys staring with s
     prefix(string),
-    // Interval is a half-open interval.
-    // For example, interval("a","d") would return all keys starting with "a", "b", or "c"
-    interval(string,string),
-    // Inclusive is a closed interval including both endpoints
-    // For example, if keys are [ "a", "b", "c" ], interval("a","c") returns ["a","b","c"]
+
+    // Inclusive is a closed interval including both endpoints.
+    // For example, in a range of timestamps, interval("2022-01-01T00:00:00", "2022-01-31T23:59:59")
+    // includes all days and times in January 2022.
+    // Caution: prefixes sort lexicographically before words containing the prefix, so the range
+    // `inclusive("a","z")` includes "allosaurus" and "yunnanosaurus", but not "zephyrosaurus".
     inclusive(string,string),
+
+    // Interval is a half-open interval.
+    // In a range of date keys, interval("2022-01-01","2022-02-01") includes
+    // all days in January 2022. Because of lexicographic ordering, prefixes can be useful for
+    // half-open intervals: the range `interval("a","n")` includes all words beginning with a-m. 
+    interval(string,string),
   }
 
   type key = string
@@ -209,7 +217,7 @@ world "wasi:cloud/services" {
 
 world "wasi:cloud/kv" {
   import kv: {*: "wasi:kv/data/crud"}
-  
+
   export http: "wasi:http/handler"
 }
 ```
@@ -223,17 +231,17 @@ interface "wasi:kv/data/transaction" {
   use { Error, payload, key } from "wasi:kv/types"
 
   get-multi: func(keys: keys) -> result<stream<payload>, Error>
-  
+
   set-multi: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
 }
 
 interface "wasi:kv/data/ttl" {
   use { Error, key } from "wasi:kv/types"
-  
+
   set-with-ttl: func(key: key, value: stream<u8>, ttl: u64) -> result<_, Error>
 }
 
-interface "wasi:kv/data/query" { 
+interface "wasi:kv/data/query" {
   ...
 }
 ```
