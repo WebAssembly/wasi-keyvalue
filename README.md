@@ -176,7 +176,7 @@ interface "wasi:kv/types" {
   }
 
   // specification for a range of keys in a wasi:kv/data/range request
-  union key-range {
+  variant key-range {
     // All keys
     all,
 
