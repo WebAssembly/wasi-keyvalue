@@ -95,7 +95,7 @@ interface "wasi:kv/data/readwrite" {
   get: func(key: key) -> result<payload, Error>
 
   // set creates a new key-value pair or updates an existing key-value pair.
-  set: func(key: key, value: stream<u8>) -> result<_, Error>
+  set: func(key: key, value: list<u8>) -> result<_, Error>
 
   // delete a key-value pair. If the key does not exist, it returns an Ok() result.
   delete: func(key: key) -> result<_, Error>
@@ -118,13 +118,13 @@ interface "wasi:kv/data/atomic" {
 }
 
 interface "wasi:kv/data/get-many" {
-  // get_many returns a stream of key-value pairs.
+  // get_many returns a list of key-value pairs.
   // Notice hat this interface is non-atomic, meaning that the key-value pairs
   // returned may not be consistent.
 
   use { Error, payload } from "wasi:kv/types"
   
-  get-many: func(keys: keys) -> result<stream<payload>, Error>
+  get-many: func(keys: keys) -> result<list<payload>, Error>
 
   get-keys: func() -> result<keys, Error>
 }
@@ -135,7 +135,7 @@ interface "wasi:kv/data/set-many" {
   // may not be consistent.
   use { Error, key } from "wasi:kv/types"
   
-  set-many: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
+  set-many: func(key_values: list<(key, list<u8>)>) -> result<_, Error>
 }
 
 interface "wasi:kv/types" {
@@ -145,35 +145,19 @@ interface "wasi:kv/types" {
     // possibly more methods
   }
   resource payload {
-    consume_async: func() -> result<stream<u8>, Error>
+    // The payload resource provides a opaque payload type that the host can implement different consume functions to interpret the payload. This includes consuming the payload synchronously or asynchronousl, and getting the size of the payload.
     consume_sync: func() -> result<list<u8>, Error>
     size: func() -> result<u64, Error>
-    // possibly more methods, like consume_async_with_key that returns a key payload pair `(key, stream<u8>)`
+    // consume_async: func() -> result<list<u8>, Error>
   }
 
   type key = string
-  type keys = stream<key>
+  type keys = list<key>
 }
 ```
 
 - The `get-many` and `set-many` are atomic.
 - The `increment` is atomic, in a way that it is a small transaction of get, increment, and set operations on the same key.
-
-```go
-world "wasi:cloud/services" {
-  import kv: {*: "wasi:cloud/kv"}
-  import mq: {*: "wasi:cloud/mq"}
-  ...
-
-  export http: "wasi:http/handler"
-}
-
-world "wasi:cloud/kv" {
-  import kv: {*: "wasi:kv/data/crud"}
-  
-  export http: "wasi:http/handler"
-}
-```
 
 The following interfaces are still under discussion:
 
@@ -183,15 +167,15 @@ interface "wasi:kv/data/transaction" {
   // If any operation fails, all operations in the transaction are rolled back.
   use { Error, payload, key } from "wasi:kv/types"
 
-  get-multi: func(keys: keys) -> result<stream<payload>, Error>
+  get-multi: func(keys: keys) -> result<list<payload>, Error>
   
-  set-multi: func(key_values: stream<(key, stream<u8>)>) -> result<_, Error>
+  set-multi: func(key_values: list<(key, list<u8>)>) -> result<_, Error>
 }
 
 interface "wasi:kv/data/ttl" {
   use { Error, key } from "wasi:kv/types"
   
-  set-with-ttl: func(key: key, value: stream<u8>, ttl: u64) -> result<_, Error>
+  set-with-ttl: func(key: key, value: list<u8>, ttl: u64) -> result<_, Error>
 }
 
 interface "wasi:kv/data/query" { 
@@ -231,5 +215,8 @@ Many thanks for valuable feedback and advice from:
 - [etc.]
 
 ### Change log
-- 2022-11-29: renamed `bulk-get` to `get-multi` and `bulk-set` to `set-multi` to be consistent with the naming convention of the other interfaces.
+- 2023-01-28: The following changes were made to the API:
+  - Changed `stream<T>` type to `list<T>` type because `stream<T>` is not supported by the current version of [*.wit](https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md).
+  - Removed the worlds section because the star import syntax is not supported by the current version of [*.wit](https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md)
+- 2022-11-29: Renamed `bulk-get` to `get-multi` and `bulk-set` to `set-multi` to be consistent with the naming convention of the other interfaces.
 - 2022-10-31: Initial draft
