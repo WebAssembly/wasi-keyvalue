@@ -34,7 +34,6 @@ interface types {
 	// Soon: switch to `resource error { ... }`
 	type error = u32
 	drop-error: func(error: error)
-	new-error: func() -> error
 	trace: func(error: error) -> string
 
 	use pkg.wasi-io.{input-stream, output-stream}
@@ -43,46 +42,46 @@ interface types {
 	/// that can be represented in a byte array. It provides a way to write the value
 	/// to the output-stream defined in the `wasi-io` interface.
 	// Soon: switch to `resource value { ... }`
-	type value = u32
-	drop-value: func(value: value)
-	new-value: func() -> value
-	value-write-body: func(value: value) -> result<output-stream>
+	type outgoing-value = u32
+	drop-outgoing-value: func(outgoing-value: outgoing-value)
+	new-outgoing-value: func() -> outgoing-value
+	outgoing-value-write-body: func(outgoing-value: outgoing-value) -> result<output-stream>
 
-	/// A payload is a wrapper around a value. It provides a way to read the value
+	/// A incoming-value is a wrapper around a value. It provides a way to read the value
 	/// from the input-stream defined in the `wasi-io` interface.
 	///
-	/// The payload provides two ways to consume the value:
-	/// 1. `payload-consume-sync` consumes the value synchronously and returns the
+	/// The incoming-value provides two ways to consume the value:
+	/// 1. `incoming-value-consume-sync` consumes the value synchronously and returns the
 	///    value as a list of bytes.
-	/// 2. `payload-consume-async` consumes the value asynchronously and returns the
+	/// 2. `incoming-value-consume-async` consumes the value asynchronously and returns the
 	///    value as an input-stream.
-	// Soon: switch to `resource payload { ... }`
-	type payload = u32
-	type payload-async-body = input-stream
-	type payload-sync-body = list<u8>
-	drop-payload: func(payload: payload)
-	payload-consume-sync: func(payload: payload) -> result<payload-sync-body, error>
-	payload-consume-async: func(payload: payload) -> result<payload-async-body, error>
-	size: func(payload: payload) -> u64
+	// Soon: switch to `resource incoming-value { ... }`
+	type incoming-value = u32
+	type incoming-value-async-body = input-stream
+	type incoming-value-sync-body = list<u8>
+	drop-incoming-value: func(incoming-value: incoming-value)
+	incoming-value-consume-sync: func(incoming-value: incoming-value) -> result<incoming-value-sync-body, error>
+	incoming-value-consume-async: func(incoming-value: incoming-value) -> result<incoming-value-async-body, error>
+	size: func(incoming-value: incoming-value) -> u64
 }
 
 /// A keyvalue interface that provides simple read and write operations.
-interface outbound-keyvalue-readwrite {
+interface keyvalue-readwrite {
 	/// A keyvalue interface that provides simple read and write operations.
-	use self.types.{bucket, error, payload, key, value}
+	use self.types.{bucket, error, incoming-value, key, outgoing-value}
 	
-	/// Get the value associated with the key in the bucket. It returns a payload
+	/// Get the value associated with the key in the bucket. It returns a incoming-value
 	/// that can be consumed to get the value.
 	///
 	/// If the key does not exist in the bucket, it returns an error.
-	get: func(bucket: bucket, key: key) -> result<payload, error>
+	get: func(bucket: bucket, key: key) -> result<incoming-value, error>
 
 	/// Set the value associated with the key in the bucket. If the key already
 	/// exists in the bucket, it overwrites the value.
 	///
 	/// If the key does not exist in the bucket, it creates a new key-value pair.
 	/// If any other error occurs, it returns an error.
-	set: func(bucket: bucket, key: key, value: value) -> result<_, error>
+	set: func(bucket: bucket, key: key, outgoing-value: outgoing-value) -> result<_, error>
 
 	/// Delete the key-value pair associated with the key in the bucket.
 	///
@@ -96,7 +95,7 @@ interface outbound-keyvalue-readwrite {
 }
 
 /// A keyvalue interface that provides atomic operations.
-interface outbound-keyvalue-atomic {
+interface keyvalue-atomic {
 	/// A keyvalue interface that provides atomic operations.
 	use self.types.{bucket, error, key}
 
@@ -116,31 +115,26 @@ interface outbound-keyvalue-atomic {
 	compare-and-swap: func(bucket: bucket, key: key, old: u64, new: u64) -> result<bool, error>
 }
 
-/// A keyvalue interface that provides batch get operations.
-interface outbound-keyvalue-get-many {
+/// A keyvalue interface that provides batch operations.
+interface keyvalue-batch {
 	/// A keyvalue interface that provides batch get operations.
-	use self.types.{bucket, error, keys, payload}
+	use self.types.{bucket, error, key, keys, incoming-value, outgoing-value}
 
 	/// Get the values associated with the keys in the bucket. It returns a list of
-	/// payloads that can be consumed to get the values.
+	/// incoming-values that can be consumed to get the values.
 	///
 	/// If any of the keys do not exist in the bucket, it returns an error.
-	get-many: func(bucket: bucket, keys: keys) -> result<list<payload>, error>
+	get-many: func(bucket: bucket, keys: keys) -> result<list<incoming-value>, error>
 
 	/// Get all the keys in the bucket. It returns a list of keys.
 	get-keys: func(bucket: bucket) -> keys
-}
 
-/// A keyvalue interface that provides batch set operations.
-interface outbound-keyvalue-set-many {
-	/// A keyvalue interface that provides batch set operations.
-	use self.types.{bucket, error, key, keys, value}
 	/// Set the values associated with the keys in the bucket. If the key already
 	/// exists in the bucket, it overwrites the value.
 	///
 	/// If any of the keys do not exist in the bucket, it creates a new key-value pair.
 	/// If any other error occurs, it returns an error.
-	set-many: func(bucket: bucket, keys: keys, values: list<tuple<key, value>>) -> result<_, error>
+	set-many: func(bucket: bucket, keys: keys, values: list<tuple<key, outgoing-value>>) -> result<_, error>
 
 	/// Delete the key-value pairs associated with the keys in the bucket.
 	///
@@ -152,11 +146,11 @@ interface outbound-keyvalue-set-many {
 /// A keyvalue interface that provides handle-watch operations.
 interface handle-watch {
 	/// A keyvalue interface that provides handle-watch operations.
-	use self.types.{bucket, key, payload}
+	use self.types.{bucket, key, incoming-value}
 
 	/// Handle the set event for the given bucket and key. 
-	/// It returns a payload that can be consumed to get the value.
-	on-set: func(bucket: bucket, key: key, payload: payload)
+	/// It returns a incoming-value that can be consumed to get the value.
+	on-set: func(bucket: bucket, key: key, incoming-value: incoming-value)
 
 	/// Handle the delete event for the given bucket and key.
 	on-delete: func(bucket: bucket, key: key)

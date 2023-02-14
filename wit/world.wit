@@ -1,11 +1,13 @@
 
-world outbound-keyvalue {
-	import readwrite: pkg.wasi-keyvalue.outbound-keyvalue-readwrite
-	import atomic: pkg.wasi-keyvalue.outbound-keyvalue-atomic
-	import get-many: pkg.wasi-keyvalue.outbound-keyvalue-get-many
-	import set-many: pkg.wasi-keyvalue.outbound-keyvalue-set-many
+world keyvalue {
+	import readwrite: pkg.wasi-keyvalue.keyvalue-readwrite
+	import atomic: pkg.wasi-keyvalue.keyvalue-atomic
+	import batch: pkg.wasi-keyvalue.keyvalue-batch
 }
 
-world inbound-keyvalue {
+world keyvalue-handle-watch {
+	import readwrite: pkg.wasi-keyvalue.keyvalue-readwrite
+	import atomic: pkg.wasi-keyvalue.keyvalue-atomic
+	import batch: pkg.wasi-keyvalue.keyvalue-batch
 	export handle-watch: pkg.wasi-keyvalue.handle-watch
 }

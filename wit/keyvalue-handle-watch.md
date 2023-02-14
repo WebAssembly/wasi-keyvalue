@@ -1,9 +1,12 @@
-# <a name="inbound_keyvalue">World inbound-keyvalue</a>
+# <a name="keyvalue_handle_watch">World keyvalue-handle-watch</a>
 
 
  - Imports:
     - interface `wasi-io`
     - interface `types`
+    - interface `readwrite`
+    - interface `atomic`
+    - interface `batch`
  - Exports:
     - interface `handle-watch`
 
@@ -201,25 +204,11 @@ be used.
 #### <a name="output_stream">`type output-stream`</a>
 [`output-stream`](#output_stream)
 <p>
-#### <a name="value">`type value`</a>
+#### <a name="outgoing_value">`type outgoing-value`</a>
 `u32`
 <p>A value is the data stored in a key-value pair. The value can be of any type
 that can be represented in a byte array. It provides a way to write the value
 to the output-stream defined in the `wasi-io` interface.
-
-#### <a name="payload_sync_body">`type payload-sync-body`</a>
-[`payload-sync-body`](#payload_sync_body)
-<p>
-#### <a name="payload">`type payload`</a>
-`u32`
-<p>A payload is a wrapper around a value. It provides a way to read the value
-from the input-stream defined in the `wasi-io` interface.
-
-The payload provides two ways to consume the value:
-1. `payload-consume-sync` consumes the value synchronously and returns the
-value as a list of bytes.
-2. `payload-consume-async` consumes the value asynchronously and returns the
-value as an input-stream.
 
 #### <a name="key">`type key`</a>
 `string`
@@ -230,9 +219,23 @@ retrieve the value from the bucket.
 [`keys`](#keys)
 <p>A list of keys
 
-#### <a name="payload_async_body">`type payload-async-body`</a>
+#### <a name="incoming_value_sync_body">`type incoming-value-sync-body`</a>
+[`incoming-value-sync-body`](#incoming_value_sync_body)
+<p>
+#### <a name="incoming_value_async_body">`type incoming-value-async-body`</a>
 [`input-stream`](#input_stream)
 <p>
+#### <a name="incoming_value">`type incoming-value`</a>
+`u32`
+<p>A incoming-value is a wrapper around a value. It provides a way to read the value
+from the input-stream defined in the `wasi-io` interface.
+
+The incoming-value provides two ways to consume the value:
+1. `incoming-value-consume-sync` consumes the value synchronously and returns the
+value as a list of bytes.
+2. `incoming-value-consume-async` consumes the value asynchronously and returns the
+value as an input-stream.
+
 #### <a name="error">`type error`</a>
 `u32`
 <p>An error resource type for keyvalue operations.
@@ -287,13 +290,6 @@ In this interface, we use the term `bucket` to refer to a collection of key-valu
 
 - <a name="drop_error.error">`error`</a>: [`error`](#error)
 
-#### <a name="new_error">`new-error: func`</a>
-
-
-##### Return values
-
-- <a name="new_error.0"></a> [`error`](#error)
-
 #### <a name="trace">`trace: func`</a>
 
 
@@ -305,70 +301,312 @@ In this interface, we use the term `bucket` to refer to a collection of key-valu
 
 - <a name="trace.0"></a> `string`
 
-#### <a name="drop_value">`drop-value: func`</a>
+#### <a name="drop_outgoing_value">`drop-outgoing-value: func`</a>
 
 
 ##### Params
 
-- <a name="drop_value.value">`value`</a>: [`value`](#value)
+- <a name="drop_outgoing_value.outgoing_value">`outgoing-value`</a>: [`outgoing-value`](#outgoing_value)
 
-#### <a name="new_value">`new-value: func`</a>
+#### <a name="new_outgoing_value">`new-outgoing-value: func`</a>
 
 
 ##### Return values
 
-- <a name="new_value.0"></a> [`value`](#value)
+- <a name="new_outgoing_value.0"></a> [`outgoing-value`](#outgoing_value)
 
-#### <a name="value_write_body">`value-write-body: func`</a>
+#### <a name="outgoing_value_write_body">`outgoing-value-write-body: func`</a>
 
 
 ##### Params
 
-- <a name="value_write_body.value">`value`</a>: [`value`](#value)
+- <a name="outgoing_value_write_body.outgoing_value">`outgoing-value`</a>: [`outgoing-value`](#outgoing_value)
 
 ##### Return values
 
-- <a name="value_write_body.0"></a> result<[`output-stream`](#output_stream)>
+- <a name="outgoing_value_write_body.0"></a> result<[`output-stream`](#output_stream)>
 
-#### <a name="drop_payload">`drop-payload: func`</a>
-
-
-##### Params
-
-- <a name="drop_payload.payload">`payload`</a>: [`payload`](#payload)
-
-#### <a name="payload_consume_sync">`payload-consume-sync: func`</a>
+#### <a name="drop_incoming_value">`drop-incoming-value: func`</a>
 
 
 ##### Params
 
-- <a name="payload_consume_sync.payload">`payload`</a>: [`payload`](#payload)
+- <a name="drop_incoming_value.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
+
+#### <a name="incoming_value_consume_sync">`incoming-value-consume-sync: func`</a>
+
+
+##### Params
+
+- <a name="incoming_value_consume_sync.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
 
 ##### Return values
 
-- <a name="payload_consume_sync.0"></a> result<[`payload-sync-body`](#payload_sync_body), [`error`](#error)>
+- <a name="incoming_value_consume_sync.0"></a> result<[`incoming-value-sync-body`](#incoming_value_sync_body), [`error`](#error)>
 
-#### <a name="payload_consume_async">`payload-consume-async: func`</a>
+#### <a name="incoming_value_consume_async">`incoming-value-consume-async: func`</a>
 
 
 ##### Params
 
-- <a name="payload_consume_async.payload">`payload`</a>: [`payload`](#payload)
+- <a name="incoming_value_consume_async.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
 
 ##### Return values
 
-- <a name="payload_consume_async.0"></a> result<[`payload-async-body`](#payload_async_body), [`error`](#error)>
+- <a name="incoming_value_consume_async.0"></a> result<[`incoming-value-async-body`](#incoming_value_async_body), [`error`](#error)>
 
 #### <a name="size">`size: func`</a>
 
 
 ##### Params
 
-- <a name="size.payload">`payload`</a>: [`payload`](#payload)
+- <a name="size.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
 
 ##### Return values
 
 - <a name="size.0"></a> `u64`
+
+## <a name="readwrite">Import interface readwrite</a>
+
+A keyvalue interface that provides simple read and write operations.
+
+----
+
+### Types
+
+#### <a name="bucket">`type bucket`</a>
+[`bucket`](#bucket)
+<p>
+#### <a name="error">`type error`</a>
+[`error`](#error)
+<p>
+#### <a name="incoming_value">`type incoming-value`</a>
+[`incoming-value`](#incoming_value)
+<p>
+#### <a name="key">`type key`</a>
+[`key`](#key)
+<p>
+#### <a name="outgoing_value">`type outgoing-value`</a>
+[`outgoing-value`](#outgoing_value)
+<p>
+----
+
+### Functions
+
+#### <a name="get">`get: func`</a>
+
+Get the value associated with the key in the bucket. It returns a incoming-value
+that can be consumed to get the value.
+
+If the key does not exist in the bucket, it returns an error.
+
+##### Params
+
+- <a name="get.bucket">`bucket`</a>: [`bucket`](#bucket)
+- <a name="get.key">`key`</a>: [`key`](#key)
+
+##### Return values
+
+- <a name="get.0"></a> result<[`incoming-value`](#incoming_value), [`error`](#error)>
+
+#### <a name="set">`set: func`</a>
+
+Set the value associated with the key in the bucket. If the key already
+exists in the bucket, it overwrites the value.
+
+If the key does not exist in the bucket, it creates a new key-value pair.
+If any other error occurs, it returns an error.
+
+##### Params
+
+- <a name="set.bucket">`bucket`</a>: [`bucket`](#bucket)
+- <a name="set.key">`key`</a>: [`key`](#key)
+- <a name="set.outgoing_value">`outgoing-value`</a>: [`outgoing-value`](#outgoing_value)
+
+##### Return values
+
+- <a name="set.0"></a> result<_, [`error`](#error)>
+
+#### <a name="delete">`delete: func`</a>
+
+Delete the key-value pair associated with the key in the bucket.
+
+If the key does not exist in the bucket, it returns an error.
+
+##### Params
+
+- <a name="delete.bucket">`bucket`</a>: [`bucket`](#bucket)
+- <a name="delete.key">`key`</a>: [`key`](#key)
+
+##### Return values
+
+- <a name="delete.0"></a> result<_, [`error`](#error)>
+
+#### <a name="exists">`exists: func`</a>
+
+Check if the key exists in the bucket.
+
+If the key does not exist in the bucket, it returns an error.
+
+##### Params
+
+- <a name="exists.bucket">`bucket`</a>: [`bucket`](#bucket)
+- <a name="exists.key">`key`</a>: [`key`](#key)
+
+##### Return values
+
+- <a name="exists.0"></a> result<`bool`, [`error`](#error)>
+
+## <a name="atomic">Import interface atomic</a>
+
+A keyvalue interface that provides atomic operations.
+
+----
+
+### Types
+
+#### <a name="bucket">`type bucket`</a>
+[`bucket`](#bucket)
+<p>
+#### <a name="error">`type error`</a>
+[`error`](#error)
+<p>
+#### <a name="key">`type key`</a>
+[`key`](#key)
+<p>
+----
+
+### Functions
+
+#### <a name="increment">`increment: func`</a>
+
+Atomically increment the value associated with the key in the bucket by the
+given delta. It returns the new value.
+
+If the key does not exist in the bucket, it creates a new key-value pair
+with the value set to the given delta.
+
+If any other error occurs, it returns an error.
+
+##### Params
+
+- <a name="increment.bucket">`bucket`</a>: [`bucket`](#bucket)
+- <a name="increment.key">`key`</a>: [`key`](#key)
+- <a name="increment.delta">`delta`</a>: `u64`
+
+##### Return values
+
+- <a name="increment.0"></a> result<`u64`, [`error`](#error)>
+
+#### <a name="compare_and_swap">`compare-and-swap: func`</a>
+
+Atomically compare and swap the value associated with the key in the bucket.
+It returns a boolean indicating if the swap was successful.
+
+If the key does not exist in the bucket, it returns an error.
+
+##### Params
+
+- <a name="compare_and_swap.bucket">`bucket`</a>: [`bucket`](#bucket)
+- <a name="compare_and_swap.key">`key`</a>: [`key`](#key)
+- <a name="compare_and_swap.old">`old`</a>: `u64`
+- <a name="compare_and_swap.new">`new`</a>: `u64`
+
+##### Return values
+
+- <a name="compare_and_swap.0"></a> result<`bool`, [`error`](#error)>
+
+## <a name="batch">Import interface batch</a>
+
+A keyvalue interface that provides batch operations.
+
+----
+
+### Types
+
+#### <a name="bucket">`type bucket`</a>
+[`bucket`](#bucket)
+<p>
+#### <a name="error">`type error`</a>
+[`error`](#error)
+<p>
+#### <a name="key">`type key`</a>
+[`key`](#key)
+<p>
+#### <a name="keys">`type keys`</a>
+[`keys`](#keys)
+<p>
+#### <a name="incoming_value">`type incoming-value`</a>
+[`incoming-value`](#incoming_value)
+<p>
+#### <a name="outgoing_value">`type outgoing-value`</a>
+[`outgoing-value`](#outgoing_value)
+<p>
+----
+
+### Functions
+
+#### <a name="get_many">`get-many: func`</a>
+
+Get the values associated with the keys in the bucket. It returns a list of
+incoming-values that can be consumed to get the values.
+
+If any of the keys do not exist in the bucket, it returns an error.
+
+##### Params
+
+- <a name="get_many.bucket">`bucket`</a>: [`bucket`](#bucket)
+- <a name="get_many.keys">`keys`</a>: [`keys`](#keys)
+
+##### Return values
+
+- <a name="get_many.0"></a> result<list<[`incoming-value`](#incoming_value)>, [`error`](#error)>
+
+#### <a name="get_keys">`get-keys: func`</a>
+
+Get all the keys in the bucket. It returns a list of keys.
+
+##### Params
+
+- <a name="get_keys.bucket">`bucket`</a>: [`bucket`](#bucket)
+
+##### Return values
+
+- <a name="get_keys.0"></a> [`keys`](#keys)
+
+#### <a name="set_many">`set-many: func`</a>
+
+Set the values associated with the keys in the bucket. If the key already
+exists in the bucket, it overwrites the value.
+
+If any of the keys do not exist in the bucket, it creates a new key-value pair.
+If any other error occurs, it returns an error.
+
+##### Params
+
+- <a name="set_many.bucket">`bucket`</a>: [`bucket`](#bucket)
+- <a name="set_many.keys">`keys`</a>: [`keys`](#keys)
+- <a name="set_many.values">`values`</a>: list<([`key`](#key), [`outgoing-value`](#outgoing_value))>
+
+##### Return values
+
+- <a name="set_many.0"></a> result<_, [`error`](#error)>
+
+#### <a name="delete_many">`delete-many: func`</a>
+
+Delete the key-value pairs associated with the keys in the bucket.
+
+If any of the keys do not exist in the bucket, it skips the key.
+If any other error occurs, it returns an error.
+
+##### Params
+
+- <a name="delete_many.bucket">`bucket`</a>: [`bucket`](#bucket)
+- <a name="delete_many.keys">`keys`</a>: [`keys`](#keys)
+
+##### Return values
+
+- <a name="delete_many.0"></a> result<_, [`error`](#error)>
 
 ## <a name="handle_watch">Export interface handle-watch</a>
 
@@ -382,8 +620,8 @@ In this interface, we use the term `bucket` to refer to a collection of key-valu
 #### <a name="key">`type key`</a>
 [`key`](#key)
 <p>
-#### <a name="payload">`type payload`</a>
-[`payload`](#payload)
+#### <a name="incoming_value">`type incoming-value`</a>
+[`incoming-value`](#incoming_value)
 <p>
 ----
 
@@ -392,13 +630,13 @@ In this interface, we use the term `bucket` to refer to a collection of key-valu
 #### <a name="on_set">`on-set: func`</a>
 
 Handle the set event for the given bucket and key.
-It returns a payload that can be consumed to get the value.
+It returns a incoming-value that can be consumed to get the value.
 
 ##### Params
 
 - <a name="on_set.bucket">`bucket`</a>: [`bucket`](#bucket)
 - <a name="on_set.key">`key`</a>: [`key`](#key)
-- <a name="on_set.payload">`payload`</a>: [`payload`](#payload)
+- <a name="on_set.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
 
 #### <a name="on_delete">`on-delete: func`</a>
 
