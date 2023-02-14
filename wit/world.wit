@@ -1,0 +1,11 @@
+
+world outbound-keyvalue {
+	import readwrite: pkg.wasi-keyvalue.outbound-keyvalue-readwrite
+	import atomic: pkg.wasi-keyvalue.outbound-keyvalue-atomic
+	import get-many: pkg.wasi-keyvalue.outbound-keyvalue-get-many
+	import set-many: pkg.wasi-keyvalue.outbound-keyvalue-set-many
+}
+
+world inbound-keyvalue {
+	export handle-watch: pkg.wasi-keyvalue.handle-watch
+}
