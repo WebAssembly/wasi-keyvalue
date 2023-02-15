@@ -1,13 +1,12 @@
-
-world keyvalue {
-	import readwrite: pkg.wasi-keyvalue.keyvalue-readwrite
-	import atomic: pkg.wasi-keyvalue.keyvalue-atomic
-	import batch: pkg.wasi-keyvalue.keyvalue-batch
+default world keyvalue {
+	import readwrite: pkg.readwrite
+	import atomic: pkg.atomic
+	import batch: pkg.batch
 }
 
 world keyvalue-handle-watch {
-	import readwrite: pkg.wasi-keyvalue.keyvalue-readwrite
-	import atomic: pkg.wasi-keyvalue.keyvalue-atomic
-	import batch: pkg.wasi-keyvalue.keyvalue-batch
-	export handle-watch: pkg.wasi-keyvalue.handle-watch
+	import readwrite: pkg.readwrite
+	import atomic: pkg.atomic
+	import batch: pkg.batch
+	export handle-watch: pkg.handle-watch
 }

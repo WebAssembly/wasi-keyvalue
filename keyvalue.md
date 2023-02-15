@@ -1,16 +1,15 @@
-# <a name="keyvalue_handle_watch">World keyvalue-handle-watch</a>
+# <a name="keyvalue">World keyvalue</a>
 
 
  - Imports:
-    - interface `wasi-io`
+    - interface `streams`
+    - interface `wasi-cloud-error`
     - interface `types`
     - interface `readwrite`
     - interface `atomic`
     - interface `batch`
- - Exports:
-    - interface `handle-watch`
 
-## <a name="wasi_io">Import interface wasi-io</a>
+## <a name="streams">Import interface streams</a>
 
 
 ----
@@ -191,6 +190,42 @@ be used.
 
 - <a name="drop_output_stream.f">`f`</a>: [`output-stream`](#output_stream)
 
+## <a name="wasi_cloud_error">Import interface wasi-cloud-error</a>
+
+
+----
+
+### Types
+
+#### <a name="error">`type error`</a>
+`u32`
+<p>An error resource type for keyvalue operations.
+Currently, this provides only one function to return a string representation
+of the error. In the future, this will be extended to provide more information
+about the error.
+
+----
+
+### Functions
+
+#### <a name="drop_error">`drop-error: func`</a>
+
+
+##### Params
+
+- <a name="drop_error.error">`error`</a>: [`error`](#error)
+
+#### <a name="trace">`trace: func`</a>
+
+
+##### Params
+
+- <a name="trace.error">`error`</a>: [`error`](#error)
+
+##### Return values
+
+- <a name="trace.0"></a> `string`
+
 ## <a name="types">Import interface types</a>
 
 
@@ -203,6 +238,9 @@ be used.
 <p>
 #### <a name="output_stream">`type output-stream`</a>
 [`output-stream`](#output_stream)
+<p>
+#### <a name="error">`type error`</a>
+[`error`](#error)
 <p>
 #### <a name="outgoing_value">`type outgoing-value`</a>
 `u32`
@@ -235,13 +273,6 @@ The incoming-value provides two ways to consume the value:
 value as a list of bytes.
 2. `incoming-value-consume-async` consumes the value asynchronously and returns the
 value as an input-stream.
-
-#### <a name="error">`type error`</a>
-`u32`
-<p>An error resource type for keyvalue operations.
-Currently, this provides only one function to return a string representation
-of the error. In the future, this will be extended to provide more information
-about the error.
 
 #### <a name="bucket">`type bucket`</a>
 `u32`
@@ -282,24 +313,6 @@ In this interface, we use the term `bucket` to refer to a collection of key-valu
 ##### Return values
 
 - <a name="open_bucket.0"></a> result<[`bucket`](#bucket), [`error`](#error)>
-
-#### <a name="drop_error">`drop-error: func`</a>
-
-
-##### Params
-
-- <a name="drop_error.error">`error`</a>: [`error`](#error)
-
-#### <a name="trace">`trace: func`</a>
-
-
-##### Params
-
-- <a name="trace.error">`error`</a>: [`error`](#error)
-
-##### Return values
-
-- <a name="trace.0"></a> `string`
 
 #### <a name="drop_outgoing_value">`drop-outgoing-value: func`</a>
 
@@ -607,43 +620,4 @@ If any other error occurs, it returns an error.
 ##### Return values
 
 - <a name="delete_many.0"></a> result<_, [`error`](#error)>
-
-## <a name="handle_watch">Export interface handle-watch</a>
-
-----
-
-### Types
-
-#### <a name="bucket">`type bucket`</a>
-[`bucket`](#bucket)
-<p>
-#### <a name="key">`type key`</a>
-[`key`](#key)
-<p>
-#### <a name="incoming_value">`type incoming-value`</a>
-[`incoming-value`](#incoming_value)
-<p>
-----
-
-### Functions
-
-#### <a name="on_set">`on-set: func`</a>
-
-Handle the set event for the given bucket and key.
-It returns a incoming-value that can be consumed to get the value.
-
-##### Params
-
-- <a name="on_set.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="on_set.key">`key`</a>: [`key`](#key)
-- <a name="on_set.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
-
-#### <a name="on_delete">`on-delete: func`</a>
-
-Handle the delete event for the given bucket and key.
-
-##### Params
-
-- <a name="on_delete.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="on_delete.key">`key`</a>: [`key`](#key)
 
