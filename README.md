@@ -249,7 +249,6 @@ interface types {
 
   /// A key is a unique identifier for a value in a bucket. The key is used to
   /// retrieve the value from the bucket.
->>>>>>> upstream/main
   type key = string
 
   /// A list of keys
