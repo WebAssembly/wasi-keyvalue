@@ -34,6 +34,7 @@ A testsuite that passes on the platforms and implementations mentioned above.
     - [Non-goals](#non-goals)
     - [API walk-through](#api-walk-through)
       - [Use case 1](#use-case-1)
+      - [Use case 2](#use-case-2)
     - [Detailed design discussion](#detailed-design-discussion)
       - [Tricky design choice 1](#tricky-design-choice-1)
       - [Tricky design choice 2](#tricky-design-choice-2)
@@ -74,132 +75,223 @@ The second goal of this API is to abstract away the network stack, allowing appl
 
 #### Use case 1
 
-Imagine you have an HTTP handler that needs to persist some data to a key-value store. The handler needs to be able to retrieve, delete, and update the data in the key-value store. The following Rust code shows how you can use the WASI Key-Value Store API to in the handler.
+Imagine you have an HTTP handler that needs to persist some data to a key-value store. The handler needs to be able to retrieve, delete, and update the data in the key-value store. The following Rust and Go code shows how you can use the WASI Key-Value Store API to in the handler.
 
 ```rust
-let value = b"value1";
-kv1::set("key", value)?;
-let val = kv1::get("key")?;
-assert_eq!(val, value);
+wit_bindgen::generate!("outbound-keyvalue" in "wit/world.wit");
+use types::{ open_bucket, drop_bucket, payload_consume_sync };
+use readwrite::{ get, set, exists };
+{
+  let my_bucket = open_bucket("my-bucket")?;
+  set(my_bucket, "my-key", "my-value")?;
+  if exists(my_bucket, "my-key")? {
+    let payload = get(my_bucket, "my-key")?;
+    let body: Vec<u8> = payload_consume_sync(payload)?;
+    let body = String::from_utf8(body)?;
+    println!("body: {}", body);
+  }
+  drop_bucket(my_bucket);
+}
+```
 
-kv1::delete("key")?;
+```go
+bucket, err := types.OpenBucket("my-bucket")
+if err != nil {
+  panic(err)
+}
+defer types.DropBucket(bucket)
+
+err := readwrite.Set(bucket, "my-key", "my-value")
+if err != nil {
+  panic(err)
+}
+
+exists, err := readwrite.Exists(bucket, "my-key")
+if exists {
+  payload, err := readwrite.Get(bucket, "my-key")
+  if err != nil {
+    panic(err)
+  }
+  body, err := types.PayloadConsumeSync(payload)
+  if err != nil {
+    panic(err)
+  }
+  fmt.Println("body: ", string(body))
+}
+```
+
+#### Use case 2
+
+If you want to watch for changes to a key-value store, you can write a wasm component that uses the inbound-keyvalue interface this API provides. The following Rust code shows how you can use the WASI Key-Value Store API to watch for changes to a key-value store.
+
+```rust
+wit_bindgen::generate!("inbound-keyvalue" in "wit/world.wit");
+struct Handler;
+
+impl inbound_keyvalue::HandleWatch for Handler {
+  fn on_set(&mut self, bucket: Bucket, key: Key, value: Payload) {
+    let payload = get(my_bucket, "my-key").unwrap();
+    let body: Vec<u8> = payload_consume_sync(payload).unwrap();
+    let body = String::from_utf8(body).unwrap();
+    println!("bucket: {}, key: {}, value: {}", bucket, key, body);
+  }
+  fn on_delete(&mut self, bucket: Bucket, key: Key) {
+    println!("bucket: {}, key: {}", bucket, key);
+  }
+}
+
 ```
 
 ### Detailed design discussion
 
 ```go
-interface "wasi:kv/data/readwrite" {
-  // use { error, payload, key } from "wasi:kv/types"
+/// A keyvalue interface that provides simple read and write operations.
+interface outbound-keyvalue-readwrite {
+  /// A keyvalue interface that provides simple read and write operations.
+  use self.types.{bucket, error, payload, key, value}
+    
+  /// Get the value associated with the key in the bucket. It returns a payload
+  /// that can be consumed to get the value.
+  ///
+  /// If the key does not exist in the bucket, it returns an error.
+  get: func(bucket: bucket, key: key) -> result<payload, error>
 
-  // Get retrieves the value associated with the given key. It returns an error if the key does not exist.
-  get: func(key: key) -> result<payload, error>
+  /// Set the value associated with the key in the bucket. If the key already
+  /// exists in the bucket, it overwrites the value.
+  ///
+  /// If the key does not exist in the bucket, it creates a new key-value pair.
+  /// If any other error occurs, it returns an error.
+  set: func(bucket: bucket, key: key, value: value) -> result<_, error>
 
-  // set creates a new key-value pair or updates an existing key-value pair.
-  set: func(key: key, value: stream<u8>) -> result<_, error>
+  /// Delete the key-value pair associated with the key in the bucket.
+  ///
+  /// If the key does not exist in the bucket, it returns an error.
+  delete: func(bucket: bucket, key: key) -> result<_, error>
 
-  // delete a key-value pair. If the key does not exist, it returns an Ok() result.
-  delete: func(key: key) -> result<_, error>
-
-  // check if the key exists.
-  exists: func(key: key) -> result<bool, error>
+  /// Check if the key exists in the bucket.
+  ///
+  /// If the key does not exist in the bucket, it returns an error.
+  exists: func(bucket: bucket, key: key) -> result<bool, error>
 }
 
-interface "wasi:kv/data/atomic" {
-  // use { error, key } from "wasi:kv/types"
+/// A keyvalue interface that provides atomic operations.
+interface outbound-keyvalue-atomic {
+  /// A keyvalue interface that provides atomic operations.
+  use self.types.{bucket, error, key}
 
-  // atomically increments the value at key by one.
-  // The value must be an integer.
-  increment: func(key: key) -> result<u64, error>
-
-  // compare and swap (CAS) is an atomic operation that compares the value of a key
-  // with a given value and, if they are equal, updates that key to a new value.
-  // This is useful for achieving synchronization between multiple processes.
-  compare_and_swap: func(key: key, old: u64, new: u64) -> result<bool, error>
+  /// Atomically increment the value associated with the key in the bucket by the 
+  /// given delta. It returns the new value.
+  ///
+  /// If the key does not exist in the bucket, it creates a new key-value pair
+  /// with the value set to the given delta. 
+  ///
+  /// If any other error occurs, it returns an error.
+  increment: func(bucket: bucket, key: key, delta: u64) -> result<u64, error>
+    
+  /// Atomically compare and swap the value associated with the key in the bucket.
+  /// It returns a boolean indicating if the swap was successful.
+  ///
+  /// If the key does not exist in the bucket, it returns an error.
+  compare-and-swap: func(bucket: bucket, key: key, old: u64, new: u64) -> result<bool, error>
 }
 
-interface "wasi:kv/data/get-many" {
-  // get_many returns a stream of key-value pairs.
-  // Notice hat this interface is non-atomic, meaning that the key-value pairs
-  // returned may not be consistent.
-
-  // use { error, keys, payload } from "wasi:kv/types"
-
-  get-many: func(keys: keys) -> result<stream<payload>, error>
-
-  get-keys: func() -> result<keys, error>
+/// A keyvalue interface that provides batch get operations.
+interface outbound-keyvalue-get-many {
+  /// A keyvalue interface that provides batch get operations.
+  use self.types.{bucket, error, keys, payload} 
+  /// Get the values associated with the keys in the bucket. It returns a list of
+  /// payloads that can be consumed to get the values.
+  ///
+  /// If any of the keys do not exist in the bucket, it returns an error.
+  get-many: func(bucket: bucket, keys: keys) -> result<list<payload>, error>  
+  /// Get all the keys in the bucket. It returns a list of keys.
+  get-keys: func(bucket: bucket) -> keys
 }
 
-interface "wasi:kv/data/set-many" {
-  // set_many sets multiple key-value pairs.
-  // Notice that this interface is non-atomic, meaning that the key-value pairs
-  // may not be consistent.
-  // use { error, key } from "wasi:kv/types"
-
-  set-many: func(key-values: stream<(key, stream<u8>)>) -> result<_, error>
+/// A keyvalue interface that provides batch set operations.
+interface outbound-keyvalue-set-many {
+  /// A keyvalue interface that provides batch set operations.
+  use self.types.{bucket, error, key, keys, value}
+  /// Set the values associated with the keys in the bucket. If the key already
+  /// exists in the bucket, it overwrites the value.
+  ///
+  /// If any of the keys do not exist in the bucket, it creates a new key-value pair.
+  /// If any other error occurs, it returns an error.
+  set-many: func(bucket: bucket, keys: keys, values: list<tuple<key, value>>) ->  result<_, error>  
+  /// Delete the key-value pairs associated with the keys in the bucket.
+  ///
+  /// If any of the keys do not exist in the bucket, it skips the key.
+  /// If any other error occurs, it returns an error.
+  delete-many: func(bucket: bucket, keys: keys) -> result<_, error>
 }
 
-interface "wasi:kv/data/range" {
-  // request using a range of keys
-  // use { error, payload, key, key-range, key-value } from "wasi:kv/types"
 
-  // returns keys within the range
-  get-keys: func(range: key-range) -> result<stream<key>, error>
+interface types {
+  /// A bucket is a collection of key-value pairs. Each key-value pair is stored
+  /// as a entry in the bucket, and the bucket itself acts as a collection of all
+  /// these entries. 
+  ///
+  /// It is worth noting that the exact terminology for bucket in key-value stores
+  /// can very depending on the specific implementation. For example,
+  /// 1. Amazon DynamoDB calls a collection of key-value pairs a table
+  /// 2. Redis has hashes, sets, and sorted sets as different types of collections
+  /// 3. Cassandra calls a collection of key-value pairs a column family
+  /// 4. MongoDB calls a collection of key-value pairs a collection
+  /// 5. Riak calls a collection of key-value pairs a bucket
+  /// 6. Memcached calls a collection of key-value pairs a slab
+  /// 7. Azure Cosmos DB calls a collection of key-value pairs a container
+  ///
+  /// In this interface, we use the term `bucket` to refer to a collection of   key-value
+  // Soon: switch to `resource bucket { ... }`
+  type bucket = u32
+  drop-bucket: func(bucket: bucket)
+  open-bucket: func(name: string) -> result<bucket, error>
 
-  // returns key-value tuples within the key range
-  get-range: func(range: key-range) -> Result<stream<key-value>, error>
-
-  // returns the number of keys that match the range
-  count-range: func(range: key-range) -> result<u64, error>
-
-  // deletes keys that match the range
-  delete-range: func(range: key-range) -> result<_, error>
-}
-
-interface "wasi:kv/types" {
-  resource error {
-    trace: func() -> string
-
-    // possibly more methods
-  }
-
-  resource payload {
-    consume_async: func() -> result<stream<u8>, error>
-    consume_sync: func() -> result<list<u8>, error>
-    size: func() -> result<u64, error>
-    // possibly more methods, like consume_async_with_key that returns a key payload pair `(key, stream<u8>)`
-  }
-
-  // a combination of key and value
-  record key-value {
-    key: string,
-    value: payload,
-  }
-
-  // specification for a range of keys in a wasi:kv/data/range request
-  variant key-range {
-    // All keys
-    all,
-
-    // All keys beginning with the prefix.
-    // For example, "s" returns all keys staring with s
-    prefix(string),
-
-    // Inclusive is a closed interval including both endpoints.
-    // For example, in a range of timestamps, interval("2022-01-01T00:00:00", "2022-01-31T23:59:59")
-    // includes all days and times in January 2022.
-    // Caution: prefixes sort lexicographically before words containing the prefix, so the range
-    // `inclusive("a","z")` includes "allosaurus" and "yunnanosaurus", but not "zephyrosaurus".
-    inclusive(string,string),
-
-    // Interval is a half-open interval.
-    // In a range of date keys, interval("2022-01-01","2022-02-01") includes
-    // all days in January 2022. Because of lexicographic ordering, prefixes can be useful for
-    // half-open intervals: the range `interval("a","n")` includes all words beginning with a-m.
-    interval(string,string),
-  }
-
+  /// A key is a unique identifier for a value in a bucket. The key is used to
+  /// retrieve the value from the bucket.
+>>>>>>> upstream/main
   type key = string
-  type keys = stream<key>
+
+  /// A list of keys
+  type keys = list<key>
+    
+  /// An error resource type for keyvalue operations.
+  /// Currently, this provides only one function to return a string representation
+  /// of the error. In the future, this will be extended to provide more information
+  /// about the error.
+  // Soon: switch to `resource error { ... }`
+  type error = u32
+  drop-error: func(error: error)
+  new-error: func() -> error
+  trace: func(error: error) -> string
+
+  use pkg.wasi-io.{input-stream, output-stream}
+
+  /// A value is the data stored in a key-value pair. The value can be of any type
+  /// that can be represented in a byte array. It provides a way to write the value
+  /// to the output-stream defined in the `wasi-io` interface.
+  // Soon: switch to `resource value { ... }`
+  type value = u32
+  drop-value: func(value: value)
+  new-value: func() -> value
+  value-write-body: func(value: value) -> result<output-stream>
+
+  /// A payload is a wrapper around a value. It provides a way to read the value
+  /// from the input-stream defined in the `wasi-io` interface.
+  ///
+  /// The payload provides two ways to consume the value:
+  /// 1. `payload-consume-sync` consumes the value synchronously and returns the
+  ///    value as a list of bytes.
+  /// 2. `payload-consume-async` consumes the value asynchronously and returns the
+  ///    value as an input-stream.
+  // Soon: switch to `resource payload { ... }`
+  type payload = u32
+  type payload-async-body = input-stream
+  type payload-sync-body = list<u8>
+  drop-payload: func(payload: payload)
+  payload-consume-sync: func(payload: payload) -> result<payload-sync-body, error>
+  payload-consume-async: func(payload: payload) -> result<payload-async-body, error>
+  size: func(payload: payload) -> u64
 }
 ```
 
@@ -230,15 +322,15 @@ interface "wasi:kv/data/transaction" {
   // If any operation fails, all operations in the transaction are rolled back.
   // use { error, payload, key } from "wasi:kv/types"
 
-  get-multi: func(keys: keys) -> result<stream<payload>, error>
-
-  set-multi: func(key-values: stream<(key, stream<u8>)>) -> result<_, error>
+  get-multi: func(keys: keys) -> result<list<payload>, Error>
+  
+  set-multi: func(key_values: list<(key, list<u8>)>) -> result<_, Error>
 }
 
 interface "wasi:kv/data/ttl" {
-  // use { error, key } from "wasi:kv/types"
-
-  set-with-ttl: func(key: key, value: stream<u8>, ttl: u64) -> result<_, error>
+  use { Error, key } from "wasi:kv/types"
+  
+  set-with-ttl: func(key: key, value: list<u8>, ttl: u64) -> result<_, Error>
 }
 
 interface "wasi:kv/data/query" {
@@ -278,5 +370,13 @@ Many thanks for valuable feedback and advice from:
 - [etc.]
 
 ### Change log
-- 2022-11-29: renamed `bulk-get` to `get-multi` and `bulk-set` to `set-multi` to be consistent with the naming convention of the other interfaces.
+- 2023-02-13: The following changes were made to the API:
+  - Added `bucket` type to the `types` interface.
+  - Uses pseudo-stream and pseudo-resource types inspired from [wasi-io ](https://github.com/WebAssembly/wasi-io)
+  - Added *.wit files for the interfaces and worlds, which are verified by the [wasm-tools](https://github.com/bytecodealliance/wasm-tools)
+  - Added a inbound-keyvalue interface that handles the `watch` operation.
+- 2023-01-28: The following changes were made to the API:
+  - Changed `stream<T>` type to `list<T>` type because `stream<T>` is not supported by the current version of [*.wit](https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md).
+  - Removed the worlds section because the star import syntax is not supported by the current version of [*.wit](https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md)
+- 2022-11-29: Renamed `bulk-get` to `get-multi` and `bulk-set` to `set-multi` to be consistent with the naming convention of the other interfaces.
 - 2022-10-31: Initial draft
