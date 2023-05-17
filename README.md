@@ -195,34 +195,32 @@ interface outbound-keyvalue-atomic {
   compare-and-swap: func(bucket: bucket, key: key, old: u64, new: u64) -> result<bool, error>
 }
 
-/// A keyvalue interface that provides batch get operations.
-interface outbound-keyvalue-get-many {
-  /// A keyvalue interface that provides batch get operations.
-  use self.types.{bucket, error, keys, payload} 
-  /// Get the values associated with the keys in the bucket. It returns a list of
-  /// payloads that can be consumed to get the values.
-  ///
-  /// If any of the keys do not exist in the bucket, it returns an error.
-  get-many: func(bucket: bucket, keys: keys) -> result<list<payload>, error>  
-  /// Get all the keys in the bucket. It returns a list of keys.
-  get-keys: func(bucket: bucket) -> keys
-}
+/// A keyvalue interface that provides batch operations.
+default interface keyvalue-batch {
+    /// A keyvalue interface that provides batch get operations.
+    use pkg.types.{bucket, error, key, keys, incoming-value, outgoing-value}
 
-/// A keyvalue interface that provides batch set operations.
-interface outbound-keyvalue-set-many {
-  /// A keyvalue interface that provides batch set operations.
-  use self.types.{bucket, error, key, keys, value}
-  /// Set the values associated with the keys in the bucket. If the key already
-  /// exists in the bucket, it overwrites the value.
-  ///
-  /// If any of the keys do not exist in the bucket, it creates a new key-value pair.
-  /// If any other error occurs, it returns an error.
-  set-many: func(bucket: bucket, keys: keys, values: list<tuple<key, value>>) ->  result<_, error>  
-  /// Delete the key-value pairs associated with the keys in the bucket.
-  ///
-  /// If any of the keys do not exist in the bucket, it skips the key.
-  /// If any other error occurs, it returns an error.
-  delete-many: func(bucket: bucket, keys: keys) -> result<_, error>
+    /// Get the values associated with the keys in the bucket. It returns a list of
+    /// incoming-values that can be consumed to get the values.
+    ///
+    /// If any of the keys do not exist in the bucket, it returns an error.
+    get-many: func(bucket: bucket, keys: keys) -> result<list<incoming-value>, error>
+
+    /// Get all the keys in the bucket. It returns a list of keys.
+    get-keys: func(bucket: bucket) -> keys
+
+    /// Set the values associated with the keys in the bucket. If the key already
+    /// exists in the bucket, it overwrites the value.
+    ///
+    /// If any of the keys do not exist in the bucket, it creates a new key-value pair.
+    /// If any other error occurs, it returns an error.
+    set-many: func(bucket: bucket, keys: keys, values: list<tuple<key, outgoing-value>>) -> result<_, error>
+
+    /// Delete the key-value pairs associated with the keys in the bucket.
+    ///
+    /// If any of the keys do not exist in the bucket, it skips the key.
+    /// If any other error occurs, it returns an error.
+    delete-many: func(bucket: bucket, keys: keys) -> result<_, error>
 }
 
 
@@ -353,6 +351,7 @@ Many thanks for valuable feedback and advice from:
 - [etc.]
 
 ### Change log
+- 2023-05-17: Updated batch example to use one interface instead of 2
 - 2023-02-13: The following changes were made to the API:
   - Added `bucket` type to the `types` interface.
   - Uses pseudo-stream and pseudo-resource types inspired from [wasi-io ](https://github.com/WebAssembly/wasi-io)
