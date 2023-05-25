@@ -1,0 +1,3 @@
+world example-world {
+    import streams
+}
