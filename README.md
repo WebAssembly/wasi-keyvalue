@@ -353,6 +353,7 @@ Many thanks for valuable feedback and advice from:
 - [etc.]
 
 ### Change log
+- 2023-05-25: Change the WITs to the newest syntax.
 - 2023-02-13: The following changes were made to the API:
   - Added `bucket` type to the `types` interface.
   - Uses pseudo-stream and pseudo-resource types inspired from [wasi-io ](https://github.com/WebAssembly/wasi-io)
