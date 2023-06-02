@@ -146,151 +146,138 @@ impl inbound_keyvalue::HandleWatch for Handler {
 
 ```go
 /// A keyvalue interface that provides simple read and write operations.
-interface outbound-keyvalue-readwrite {
-  /// A keyvalue interface that provides simple read and write operations.
-  use self.types.{bucket, error, payload, key, value}
-    
-  /// Get the value associated with the key in the bucket. It returns a payload
-  /// that can be consumed to get the value.
-  ///
-  /// If the key does not exist in the bucket, it returns an error.
-  get: func(bucket: bucket, key: key) -> result<payload, error>
+interface readwrite {
+	/// A keyvalue interface that provides simple read and write operations.
+	use types.{bucket, error, incoming-value, key, outgoing-value}
+	
+	/// Get the value associated with the key in the bucket. It returns a incoming-value
+	/// that can be consumed to get the value.
+	///
+	/// If the key does not exist in the bucket, it returns an error.
+	get: func(bucket: bucket, key: key) -> result<incoming-value, error>
 
-  /// Set the value associated with the key in the bucket. If the key already
-  /// exists in the bucket, it overwrites the value.
-  ///
-  /// If the key does not exist in the bucket, it creates a new key-value pair.
-  /// If any other error occurs, it returns an error.
-  set: func(bucket: bucket, key: key, value: value) -> result<_, error>
+	/// Set the value associated with the key in the bucket. If the key already
+	/// exists in the bucket, it overwrites the value.
+	///
+	/// If the key does not exist in the bucket, it creates a new key-value pair.
+	/// If any other error occurs, it returns an error.
+	set: func(bucket: bucket, key: key, outgoing-value: outgoing-value) -> result<_, error>
 
-  /// Delete the key-value pair associated with the key in the bucket.
-  ///
-  /// If the key does not exist in the bucket, it returns an error.
-  delete: func(bucket: bucket, key: key) -> result<_, error>
+	/// Delete the key-value pair associated with the key in the bucket.
+	///
+	/// If the key does not exist in the bucket, it returns an error.
+	delete: func(bucket: bucket, key: key) -> result<_, error>
 
-  /// Check if the key exists in the bucket.
-  ///
-  /// If the key does not exist in the bucket, it returns an error.
-  exists: func(bucket: bucket, key: key) -> result<bool, error>
+	/// Check if the key exists in the bucket.
+	///
+	/// If the key does not exist in the bucket, it returns an error.
+	exists: func(bucket: bucket, key: key) -> result<bool, error>
 }
-
 /// A keyvalue interface that provides atomic operations.
-interface outbound-keyvalue-atomic {
-  /// A keyvalue interface that provides atomic operations.
-  use self.types.{bucket, error, key}
+interface atomic {
+	/// A keyvalue interface that provides atomic operations.
+	use types.{bucket, error, key}
 
-  /// Atomically increment the value associated with the key in the bucket by the 
-  /// given delta. It returns the new value.
-  ///
-  /// If the key does not exist in the bucket, it creates a new key-value pair
-  /// with the value set to the given delta. 
-  ///
-  /// If any other error occurs, it returns an error.
-  increment: func(bucket: bucket, key: key, delta: u64) -> result<u64, error>
-    
-  /// Atomically compare and swap the value associated with the key in the bucket.
-  /// It returns a boolean indicating if the swap was successful.
-  ///
-  /// If the key does not exist in the bucket, it returns an error.
-  compare-and-swap: func(bucket: bucket, key: key, old: u64, new: u64) -> result<bool, error>
+	/// Atomically increment the value associated with the key in the bucket by the 
+	/// given delta. It returns the new value.
+	///
+	/// If the key does not exist in the bucket, it creates a new key-value pair
+	/// with the value set to the given delta. 
+	///
+	/// If any other error occurs, it returns an error.
+	increment: func(bucket: bucket, key: key, delta: u64) -> result<u64, error>
+	
+	/// Atomically compare and swap the value associated with the key in the bucket.
+	/// It returns a boolean indicating if the swap was successful.
+	///
+	/// If the key does not exist in the bucket, it returns an error.
+	compare-and-swap: func(bucket: bucket, key: key, old: u64, new: u64) -> result<bool, error>
 }
 
-/// A keyvalue interface that provides batch get operations.
-interface outbound-keyvalue-get-many {
-  /// A keyvalue interface that provides batch get operations.
-  use self.types.{bucket, error, keys, payload} 
-  /// Get the values associated with the keys in the bucket. It returns a list of
-  /// payloads that can be consumed to get the values.
-  ///
-  /// If any of the keys do not exist in the bucket, it returns an error.
-  get-many: func(bucket: bucket, keys: keys) -> result<list<payload>, error>  
-  /// Get all the keys in the bucket. It returns a list of keys.
-  get-keys: func(bucket: bucket) -> keys
+/// A keyvalue interface that provides batch operations.
+interface batch {
+	/// A keyvalue interface that provides batch get operations.
+	use types.{bucket, error, key, keys, incoming-value, outgoing-value}
+
+	/// Get the values associated with the keys in the bucket. It returns a list of
+	/// incoming-values that can be consumed to get the values.
+	///
+	/// If any of the keys do not exist in the bucket, it returns an error.
+	get-many: func(bucket: bucket, keys: keys) -> result<list<incoming-value>, error>
+
+	/// Get all the keys in the bucket. It returns a list of keys.
+	get-keys: func(bucket: bucket) -> keys
+
+	/// Set the values associated with the keys in the bucket. If the key already
+	/// exists in the bucket, it overwrites the value.
+	///
+	/// If any of the keys do not exist in the bucket, it creates a new key-value pair.
+	/// If any other error occurs, it returns an error.
+	set-many: func(bucket: bucket, keys: keys, values: list<tuple<key, outgoing-value>>) -> result<_, error>
+
+	/// Delete the key-value pairs associated with the keys in the bucket.
+	///
+	/// If any of the keys do not exist in the bucket, it skips the key.
+	/// If any other error occurs, it returns an error.
+	delete-many: func(bucket: bucket, keys: keys) -> result<_, error>
 }
 
-/// A keyvalue interface that provides batch set operations.
-interface outbound-keyvalue-set-many {
-  /// A keyvalue interface that provides batch set operations.
-  use self.types.{bucket, error, key, keys, value}
-  /// Set the values associated with the keys in the bucket. If the key already
-  /// exists in the bucket, it overwrites the value.
-  ///
-  /// If any of the keys do not exist in the bucket, it creates a new key-value pair.
-  /// If any other error occurs, it returns an error.
-  set-many: func(bucket: bucket, keys: keys, values: list<tuple<key, value>>) ->  result<_, error>  
-  /// Delete the key-value pairs associated with the keys in the bucket.
-  ///
-  /// If any of the keys do not exist in the bucket, it skips the key.
-  /// If any other error occurs, it returns an error.
-  delete-many: func(bucket: bucket, keys: keys) -> result<_, error>
-}
-
-
+// A generic keyvalue interface for WASI.
 interface types {
-  /// A bucket is a collection of key-value pairs. Each key-value pair is stored
-  /// as a entry in the bucket, and the bucket itself acts as a collection of all
-  /// these entries. 
-  ///
-  /// It is worth noting that the exact terminology for bucket in key-value stores
-  /// can very depending on the specific implementation. For example,
-  /// 1. Amazon DynamoDB calls a collection of key-value pairs a table
-  /// 2. Redis has hashes, sets, and sorted sets as different types of collections
-  /// 3. Cassandra calls a collection of key-value pairs a column family
-  /// 4. MongoDB calls a collection of key-value pairs a collection
-  /// 5. Riak calls a collection of key-value pairs a bucket
-  /// 6. Memcached calls a collection of key-value pairs a slab
-  /// 7. Azure Cosmos DB calls a collection of key-value pairs a container
-  ///
-  /// In this interface, we use the term `bucket` to refer to a collection of   key-value
-  // Soon: switch to `resource bucket { ... }`
-  type bucket = u32
-  drop-bucket: func(bucket: bucket)
-  open-bucket: func(name: string) -> result<bucket, error>
+	/// A bucket is a collection of key-value pairs. Each key-value pair is stored
+	/// as a entry in the bucket, and the bucket itself acts as a collection of all
+	/// these entries. 
+	///
+	/// It is worth noting that the exact terminology for bucket in key-value stores
+	/// can very depending on the specific implementation. For example,
+	/// 1. Amazon DynamoDB calls a collection of key-value pairs a table
+	/// 2. Redis has hashes, sets, and sorted sets as different types of collections
+	/// 3. Cassandra calls a collection of key-value pairs a column family
+	/// 4. MongoDB calls a collection of key-value pairs a collection
+	/// 5. Riak calls a collection of key-value pairs a bucket
+	/// 6. Memcached calls a collection of key-value pairs a slab
+	/// 7. Azure Cosmos DB calls a collection of key-value pairs a container
+	///
+	/// In this interface, we use the term `bucket` to refer to a collection of key-value
+	// Soon: switch to `resource bucket { ... }`
+	type bucket = u32
+	drop-bucket: func(bucket: bucket)
+	open-bucket: func(name: string) -> result<bucket, error>
 
-  /// A key is a unique identifier for a value in a bucket. The key is used to
-  /// retrieve the value from the bucket.
-  type key = string
+	/// A key is a unique identifier for a value in a bucket. The key is used to
+	/// retrieve the value from the bucket.
+	type key = string
 
-  /// A list of keys
-  type keys = list<key>
-    
-  /// An error resource type for keyvalue operations.
-  /// Currently, this provides only one function to return a string representation
-  /// of the error. In the future, this will be extended to provide more information
-  /// about the error.
-  // Soon: switch to `resource error { ... }`
-  type error = u32
-  drop-error: func(error: error)
-  new-error: func() -> error
-  trace: func(error: error) -> string
+	/// A list of keys
+	type keys = list<key>
 
-  use pkg.wasi-io.{input-stream, output-stream}
+	use wasi:io/streams.{input-stream, output-stream}
+	use wasi-cloud-error.{ error }
+	/// A value is the data stored in a key-value pair. The value can be of any type
+	/// that can be represented in a byte array. It provides a way to write the value
+	/// to the output-stream defined in the `wasi-io` interface.
+	// Soon: switch to `resource value { ... }`
+	type outgoing-value = u32
+	drop-outgoing-value: func(outgoing-value: outgoing-value)
+	new-outgoing-value: func() -> outgoing-value
+	outgoing-value-write-body: func(outgoing-value: outgoing-value) -> result<output-stream>
 
-  /// A value is the data stored in a key-value pair. The value can be of any type
-  /// that can be represented in a byte array. It provides a way to write the value
-  /// to the output-stream defined in the `wasi-io` interface.
-  // Soon: switch to `resource value { ... }`
-  type value = u32
-  drop-value: func(value: value)
-  new-value: func() -> value
-  value-write-body: func(value: value) -> result<output-stream>
-
-  /// A payload is a wrapper around a value. It provides a way to read the value
-  /// from the input-stream defined in the `wasi-io` interface.
-  ///
-  /// The payload provides two ways to consume the value:
-  /// 1. `payload-consume-sync` consumes the value synchronously and returns the
-  ///    value as a list of bytes.
-  /// 2. `payload-consume-async` consumes the value asynchronously and returns the
-  ///    value as an input-stream.
-  // Soon: switch to `resource payload { ... }`
-  type payload = u32
-  type payload-async-body = input-stream
-  type payload-sync-body = list<u8>
-  drop-payload: func(payload: payload)
-  payload-consume-sync: func(payload: payload) -> result<payload-sync-body, error>
-  payload-consume-async: func(payload: payload) -> result<payload-async-body, error>
-  size: func(payload: payload) -> u64
+	/// A incoming-value is a wrapper around a value. It provides a way to read the value
+	/// from the input-stream defined in the `wasi-io` interface.
+	///
+	/// The incoming-value provides two ways to consume the value:
+	/// 1. `incoming-value-consume-sync` consumes the value synchronously and returns the
+	///    value as a list of bytes.
+	/// 2. `incoming-value-consume-async` consumes the value asynchronously and returns the
+	///    value as an input-stream.
+	// Soon: switch to `resource incoming-value { ... }`
+	type incoming-value = u32
+	type incoming-value-async-body = input-stream
+	type incoming-value-sync-body = list<u8>
+	drop-incoming-value: func(incoming-value: incoming-value)
+	incoming-value-consume-sync: func(incoming-value: incoming-value) -> result<incoming-value-sync-body, error>
+	incoming-value-consume-async: func(incoming-value: incoming-value) -> result<incoming-value-async-body, error>
+	size: func(incoming-value: incoming-value) -> u64
 }
 ```
 
@@ -300,18 +287,18 @@ interface types {
 The following interfaces are still under discussion:
 
 ```go
-interface "wasi:kv/data/transaction" {
+interface transaction {
   // transaction is an atomic operation that groups multiple operations together.
   // If any operation fails, all operations in the transaction are rolled back.
-  use { Error, payload, key } from "wasi:kv/types"
+  use types.{ Error, payload, key }
 
   get-multi: func(keys: keys) -> result<list<payload>, Error>
   
   set-multi: func(key_values: list<(key, list<u8>)>) -> result<_, Error>
 }
 
-interface "wasi:kv/data/ttl" {
-  use { Error, key } from "wasi:kv/types"
+interface ttl {
+  use types.{ Error, key }
   
   set-with-ttl: func(key: key, value: list<u8>, ttl: u64) -> result<_, Error>
 }
@@ -353,6 +340,8 @@ Many thanks for valuable feedback and advice from:
 - [etc.]
 
 ### Change log
+
+- 2023-05-17: Updated batch example to use one interface instead of 2
 - 2023-05-25: Change the WITs to the newest syntax.
 - 2023-02-13: The following changes were made to the API:
   - Added `bucket` type to the `types` interface.
