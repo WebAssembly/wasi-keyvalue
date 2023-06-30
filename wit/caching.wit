@@ -1,7 +1,75 @@
+// The `wasi:keyvalue/cache` interface provides the operations for using a
+// single instance of a cache, which is a non-durable, weakly-consistent
+// key-value store. The non-durability means that caches are allowed and
+// expected to arbitrarily discard key-value entries. The weak consistency
+// means that there are essentially no guarantees that operations will
+// agree on their results: a get following a set may not observe the set
+// value; multiple gets may observe different previous set values; etc.
 interface cache {
-    use types.{bucket, key, incoming-value, outgoing-value}
-    open: func(name: string) -> bucket
-    get: func(b: bucket, k: key, ttl-ms: u32) -> result<incoming-value, error>
-    set: func(b: bucket, k: key, outgoing-value: outgoing-value, ttl-ms: u32) -> result<_, error>
-    exists: func(bucket: bucket, key: key) -> result<bool, error> 
+    use wasi:poll/poll.{pollable}
+    use types.{key, incoming-value, outgoing-value, error}
+
+    // The `get` operation returns the value passed by a previous `set` for the
+    // same key within the given TTL or none if there is no such value.
+    get: func(k: key) -> future-get-result
+
+    // This block defines a special resource type used by `get` to emulate
+    // `future<result<option<incoming-value>,error>>`.
+    type future-get-result = u32
+    drop-future-get-result: func(f: future-get-result)
+    future-get-result-get: func(f: future-get-result) -> option<result<option<incoming-value>, error>>
+    listen-to-future-get-result: func(f: future-get-result) -> pollable
+
+    // The `exists` operation returns whether a value was previously `set` for
+    // the given key within the TTL.
+    exists: func(k: key) -> result<bool, error> 
+
+    // This block defines a special resource type used by `exists` to emulate
+    // `future<result<bool,error>>`.
+    type future-exists-result = u32
+    drop-future-exists-result: func(f: future-exists-result)
+    future-exists-result-get: func(f: future-exists-result) -> option<result<bool, error>>
+    listen-to-future-exists-result: func(f: future-exists-result) -> pollable
+
+    // The `set` operation sets the given value for the given key for the given
+    // time-to-live (TTL) duration, specified in milliseconds. If the key is
+    // already present in the cache, the value is updated in-place. In the
+    // common case of computing and caching a value if the given key is not
+    // already in the cache, consider using `get-or-set` (below) intead of
+    // separate `get` and `set` operations.
+    set: func(k: key, v: outgoing-value, TTL-ms: u32) -> future-set-result
+
+    // This block defines a special resource type used by `set` to emulate
+    // `future<result<_,error>>`.
+    type future-set-result = u32
+    drop-future-set-result: func(f: future-set-result)
+    future-set-result-get: func(f: future-set-result) -> option<result<_, error>>
+    listen-to-future-set-result: func(f: future-set-result) -> pollable
+
+    // The `get-or-set` operation asynchronously returns one of two cases: in
+    // the `occupied` case, the given key already has a value present in the
+    // cache within its TTL; in the `vacant` case, there was no value and the
+    // caller should write a value into the returned `outgoing-value` resource.
+    // This operation allows multiple concurrent `get-or-set` invocations to
+    // rendezvous such that only one invocation receives the `vacant` result
+    // and all other invocations wait until the `outgoing-value` is written,
+    // before receiving an `occupied` result with that same value.
+    // Implementations are not required to implement this rendezvous or to
+    // rendezvous in all possible cases. If a caller receives a `vacant` result
+    // and drops the `outgoing-value` before completely writing the value,
+    // the `set` is cancelled and another `get-or-set` operation must be
+    // unblocked by returning `vacant`. Implementations may impose a timeout on
+    // writing an `outgoing-value` that also automatically cancels the `set`.
+    variant get-or-set-entry {
+      occupied(incoming-value),
+      vacant(outgoing-value)
+    }
+    get-or-set: func(k: key, ttl-ms: u32) -> result<future-get-or-set-result, error>
+
+    // This block defines a special resource type used by `get-or-set` to
+    // emulate `future<result<get-or-set-entry,error>>`.
+    type future-get-or-set-result = u32
+    drop-future-get-or-set-result: func(f: future-get-or-set-result)
+    future-get-or-set-result-get: func(f: future-get-or-set-result) -> option<result<get-or-set-entry, error>>
+    listen-to-future-get-or-set-result: func(f: future-get-or-set-result) -> pollable
 } 
