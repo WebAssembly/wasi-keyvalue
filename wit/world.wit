@@ -12,3 +12,7 @@ world keyvalue-handle-watch {
 	import batch
 	export handle-watch
 }
+
+world caching {
+	import cache
+}

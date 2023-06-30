@@ -1,0 +1,7 @@
+interface cache {
+    use types.{bucket, key, incoming-value, outgoing-value}
+    open: func(name: string) -> bucket
+    get: func(b: bucket, k: key, ttl-ms: u32) -> result<incoming-value, error>
+    set: func(b: bucket, k: key, outgoing-value: outgoing-value, ttl-ms: u32) -> result<_, error>
+    exists: func(bucket: bucket, key: key) -> result<bool, error> 
+} 
