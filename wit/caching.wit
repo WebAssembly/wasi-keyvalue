@@ -68,7 +68,7 @@ interface cache {
       occupied(incoming-value),
       vacant(vacancy)
     }
-    get-or-set: func(k: key, TTL-ms: option<u32>) -> future-get-or-set-result
+    get-or-set: func(k: key) -> future-get-or-set-result
 
     // This block defines a special resource type used by `get-or-set` to
     // emulate `future<result<get-or-set-entry,error>>`.
