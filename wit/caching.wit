@@ -45,14 +45,14 @@ interface cache {
     // In the common case of computing and caching a value if the given key is
     // not already in the cache, consider using `get-or-set` (below) intead of
     // separate `get` and `set` operations.
-    set: func(k: key, v: outgoing-value, TTL-ms: option<u32>) -> future-set-result
+    set: func(k: key, v: outgoing-value, TTL-ms: option<u32>) -> future-result
 
-    // This block defines a special resource type used by `set` to emulate
-    // `future<result<_,error>>`.
-    type future-set-result = u32
-    drop-future-set-result: func(f: future-set-result)
-    future-set-result-get: func(f: future-set-result) -> option<result<_, error>>
-    listen-to-future-set-result: func(f: future-set-result) -> pollable
+    // This block defines a special resource type used by `set` and `delete` to
+    // emulate `future<result<_,error>>`.
+    type future-result = u32
+    drop-future-result: func(f: future-result)
+    future-result-get: func(f: future-result) -> option<result<_, error>>
+    listen-to-future-result: func(f: future-result) -> pollable
 
     // The `get-or-set` operation asynchronously returns one of two cases
     // enumerated by `get-or-set-entry`: in the `occupied` case, the given key
@@ -87,4 +87,11 @@ interface cache {
     type vacancy = u32
     drop-vacancy: func(v: vacancy)
     vacancy-fill: func(v: vacancy, TTL-ms: option<u32>) -> outgoing-value
+
+    // The `delete` operation removes any value with the given key from the
+    // cache. Like all cache operations, `delete` is weakly ordered and thus
+    // concurrent `get` calls may still see deleted keys for a period of time.
+    // Additionally, due to weak ordering, concurrent `set` calls for the same
+    // key may or may not get deleted.
+    delete: func(k: key) -> future-result
 } 
