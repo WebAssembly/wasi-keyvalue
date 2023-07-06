@@ -58,19 +58,15 @@ interface cache {
     // enumerated by `get-or-set-entry`: in the `occupied` case, the given key
     // already has a value present in the cache; in the `vacant` case, there
     // was no value and the caller should write a value into the returned
-    // `outgoing-value` resource. This operation allows multiple concurrent
-    // `get-or-set` invocations to rendezvous such that only one invocation
-    // receives the `vacant` result while all other invocations wait until the
-    // `outgoing-value` is written before receiving an `occupied` result.
-    // Implementations are not required to implement this rendezvous or to
-    // rendezvous in all possible cases. If a caller receives a `vacant` result
-    // and drops the `outgoing-value` before completely writing the value, the
-    // `set` is cancelled and another `get-or-set` operation must be unblocked
-    // by returning `vacant`. Implementations may impose a timeout on writing
-    // an `outgoing-value` that also automatically cancels the `set`.
+    // `vacancy`. This operation allows multiple concurrent `get-or-set`
+    // invocations to rendezvous such that only one invocation receives the
+    // `vacant` result while all other invocations wait until the vacancy is
+    // filled before receiving an `occupied` result. Implementations are not
+    // required to implement this rendezvous or to rendezvous in all possible
+    // cases.
     variant get-or-set-entry {
       occupied(incoming-value),
-      vacant(outgoing-value)
+      vacant(vacancy)
     }
     get-or-set: func(k: key, TTL-ms: option<u32>) -> future-get-or-set-result
 
@@ -80,4 +76,15 @@ interface cache {
     drop-future-get-or-set-result: func(f: future-get-or-set-result)
     future-get-or-set-result-get: func(f: future-get-or-set-result) -> option<result<get-or-set-entry, error>>
     listen-to-future-get-or-set-result: func(f: future-get-or-set-result) -> pollable
+
+    // The following block defines the `vacancy` resource type. (When resource
+    // types are added, the `u32` type aliases can be replaced by proper
+    // `resource` types.) When the caller of `get-or-set` receives a `vacancy`,
+    // they must either call the `fill` method or drop the `vacancy` to
+    // indicate an error that prevents calling `fill`. An implementation MAY
+    // have a timeout that drops a vacancy that hasn't been filled in order
+    // to unblock other waiting `get-or-set` callers.
+    type vacancy = u32
+    drop-vacancy: func(v: vacancy)
+    vacancy-fill: func(v: vacancy, TTL-ms: option<u32>) -> outgoing-value
 } 
