@@ -41,10 +41,11 @@ interface cache {
 
     // The `set` operation sets the given value for the given key for the given
     // time-to-live (TTL) duration, if supplied, specified in milliseconds. If
-    // the key is already present in the cache, the value is updated in-place.
-    // In the common case of computing and caching a value if the given key is
-    // not already in the cache, consider using `get-or-set` (below) intead of
-    // separate `get` and `set` operations.
+    // a TTL is not supplied, the key may be kept indefinitely (as-if a very
+    // large TTL were used). If the key is already present in the cache, the
+    // value is updated in-place. In the common case of computing and caching a
+    // value if the given key is not already in the cache, consider using
+    // `get-or-set` (below) intead of separate `get` and `set` operations.
     set: func(k: key, v: outgoing-value, TTL-ms: option<u32>) -> future-result
 
     // This block defines a special resource type used by `set` and `delete` to
