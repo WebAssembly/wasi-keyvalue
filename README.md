@@ -25,25 +25,25 @@ A testsuite that passes on the platforms and implementations mentioned above.
 ## Table of Contents
 
 - [WASI Key-Value Store](#wasi-key-value-store)
-    - [Current Phase](#current-phase)
-    - [Champions](#champions)
-    - [Phase 4 Advancement Criteria](#phase-4-advancement-criteria)
-  - [Table of Contents](#table-of-contents)
-    - [Introduction](#introduction)
-    - [Goals](#goals)
-    - [Non-goals](#non-goals)
-    - [API walk-through](#api-walk-through)
-      - [Use case 1](#use-case-1)
-      - [Use case 2](#use-case-2)
-    - [Detailed design discussion](#detailed-design-discussion)
-      - [Tricky design choice 1](#tricky-design-choice-1)
-      - [Tricky design choice 2](#tricky-design-choice-2)
-    - [Considered alternatives](#considered-alternatives)
-      - [Alternative 1](#alternative-1)
-      - [Alternative 2](#alternative-2)
-    - [Stakeholder Interest \& Feedback](#stakeholder-interest--feedback)
-    - [References \& acknowledgements](#references--acknowledgements)
-    - [Change log](#change-log)
+		- [Current Phase](#current-phase)
+		- [Champions](#champions)
+		- [Phase 4 Advancement Criteria](#phase-4-advancement-criteria)
+	- [Table of Contents](#table-of-contents)
+		- [Introduction](#introduction)
+		- [Goals](#goals)
+		- [Non-goals](#non-goals)
+		- [API walk-through](#api-walk-through)
+			- [Use case 1](#use-case-1)
+			- [Use case 2](#use-case-2)
+		- [Detailed design discussion](#detailed-design-discussion)
+			- [Tricky design choice 1](#tricky-design-choice-1)
+			- [Tricky design choice 2](#tricky-design-choice-2)
+		- [Considered alternatives](#considered-alternatives)
+			- [Alternative 1](#alternative-1)
+			- [Alternative 2](#alternative-2)
+		- [Stakeholder Interest \& Feedback](#stakeholder-interest--feedback)
+		- [References \& acknowledgements](#references--acknowledgements)
+		- [Change log](#change-log)
 
 ### Introduction
 
@@ -213,7 +213,7 @@ interface batch {
 	///
 	/// If any of the keys do not exist in the bucket, it creates a new key-value pair.
 	/// If any other error occurs, it returns an error.
-	set-many: func(bucket: bucket, keys: keys, values: list<tuple<key, outgoing-value>>) -> result<_, error>
+	set-many: func(bucket: bucket, key-values: list<tuple<key, outgoing-value>>) -> result<_, error>
 
 	/// Delete the key-value pairs associated with the keys in the bucket.
 	///
