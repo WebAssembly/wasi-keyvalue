@@ -1,9 +1,4 @@
 [io]
 url = "https://github.com/WebAssembly/wasi-io/archive/main.tar.gz"
-sha256 = "6e18239b0e20d1a3e6343cb961ebfd2c663ba7feb4c1aa3744b756fbdd1fb5b8"
-sha512 = "53169b6e4fba0b2cf5fcf808f76e7fbb7cabb6ed66ab53f77d0966e7448312ccbe8571880ef4fc2ee86fbd6ba19bc48d46e10d22dcac6c51d217e8d7127c32db"
-
-[poll]
-url = "https://github.com/WebAssembly/wasi-poll/archive/main.tar.gz"
-sha256 = "d4c27124f4c137eb538b5c92ba5858ed9042e11b24a2eef85d14becd0b7f55de"
-sha512 = "422c01b273b4b1377ece6f2e4ba0dfc609ca8ef30a3e0be0e172e1303fcf7b3ca4c470f4dea6c51bdf114b0f5c871ebc4934dfe3bf217d66ea689748df2b1e55"
+sha256 = "a00c29dd57dc224e8ce28b793b19c1b1001dcdbdc229ed451c3df1db91841b34"
+sha512 = "8558085eeb5689209101cdfbc9782953d559ad14ce77260fe2f7cc472482d568f65cad9e6a688d40c634c6c54c608f27e27e481633446114d6fdead93d4e34c5"
