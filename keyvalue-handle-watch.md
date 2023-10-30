@@ -1,474 +1,426 @@
-# <a name="keyvalue_handle_watch">World keyvalue-handle-watch</a>
-
-
- - Imports:
-    - interface `wasi:poll/poll`
-    - interface `wasi:io/streams`
-    - interface `wasi:keyvalue/wasi-cloud-error`
-    - interface `wasi:keyvalue/types`
-    - interface `wasi:keyvalue/readwrite`
-    - interface `wasi:keyvalue/atomic`
-    - interface `wasi:keyvalue/batch`
- - Exports:
-    - interface `wasi:keyvalue/handle-watch`
-
-## <a name="wasi:poll_poll">Import interface wasi:poll/poll</a>
-
-A poll API intended to let users wait for I/O events on multiple handles
-at once.
-
-----
-
-### Types
-
-#### <a name="pollable">`type pollable`</a>
-`u32`
-<p>A "pollable" handle.
-
-This is conceptually represents a `stream<_, _>`, or in other words,
-a stream that one can wait on, repeatedly, but which does not itself
-produce any data. It's temporary scaffolding until component-model's
-async features are ready.
-
-And at present, it is a `u32` instead of being an actual handle, until
-the wit-bindgen implementation of handles and resources is ready.
-
-`pollable` lifetimes are not automatically managed. Users must ensure
-that they do not outlive the resource they reference.
-
-This [represents a resource](https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources).
-
-----
-
-### Functions
-
-#### <a name="drop_pollable">`drop-pollable: func`</a>
-
-Dispose of the specified `pollable`, after which it may no longer
-be used.
-
-##### Params
-
-- <a name="drop_pollable.this">`this`</a>: [`pollable`](#pollable)
-
-#### <a name="poll_oneoff">`poll-oneoff: func`</a>
-
-Poll for completion on a set of pollables.
-
-This function takes a list of pollables, which identify I/O sources of
-interest, and waits until one or more of the events is ready for I/O.
-
-The result `list<bool>` is the same length as the argument
-`list<pollable>`, and indicates the readiness of each corresponding
-element in that list, with true indicating ready. A single call can
-return multiple true elements.
-
-A timeout can be implemented by adding a pollable from the
-wasi-clocks API to the list.
-
-This function does not return a `result`; polling in itself does not
+<h1><a name="keyvalue_handle_watch">World keyvalue-handle-watch</a></h1>
+<ul>
+<li>Imports:
+<ul>
+<li>interface <a href="#wasi:io_poll"><code>wasi:io/poll</code></a></li>
+<li>interface <a href="#wasi:io_streams"><code>wasi:io/streams</code></a></li>
+<li>interface <a href="#wasi:keyvalue_wasi_cloud_error"><code>wasi:keyvalue/wasi-cloud-error</code></a></li>
+<li>interface <a href="#wasi:keyvalue_types"><code>wasi:keyvalue/types</code></a></li>
+<li>interface <a href="#wasi:keyvalue_readwrite"><code>wasi:keyvalue/readwrite</code></a></li>
+<li>interface <a href="#wasi:keyvalue_atomic"><code>wasi:keyvalue/atomic</code></a></li>
+<li>interface <a href="#wasi:keyvalue_batch"><code>wasi:keyvalue/batch</code></a></li>
+</ul>
+</li>
+<li>Exports:
+<ul>
+<li>interface <a href="#wasi:keyvalue_handle_watch"><code>wasi:keyvalue/handle-watch</code></a></li>
+</ul>
+</li>
+</ul>
+<h2><a name="wasi:io_poll">Import interface wasi:io/poll</a></h2>
+<p>A poll API intended to let users wait for I/O events on multiple handles
+at once.</p>
+<hr />
+<h3>Types</h3>
+<h4><a name="pollable"><code>resource pollable</code></a></h4>
+<h2>A &quot;pollable&quot; handle.</h2>
+<h3>Functions</h3>
+<h4><a name="poll_list"><code>poll-list: func</code></a></h4>
+<p>Poll for completion on a set of pollables.</p>
+<p>This function takes a list of pollables, which identify I/O sources of
+interest, and waits until one or more of the events is ready for I/O.</p>
+<p>The result <code>list&lt;u32&gt;</code> contains one or more indices of handles in the
+argument list that is ready for I/O.</p>
+<p>If the list contains more elements than can be indexed with a <code>u32</code>
+value, this function traps.</p>
+<p>A timeout can be implemented by adding a pollable from the
+wasi-clocks API to the list.</p>
+<p>This function does not return a <code>result</code>; polling in itself does not
 do any I/O so it doesn't fail. If any of the I/O sources identified by
 the pollables has an error, it is indicated by marking the source as
-ready in the `list<bool>`.
-
-The "oneoff" in the name refers to the fact that this function must do a
-linear scan through the entire list of subscriptions, which may be
-inefficient if the number is large and the same subscriptions are used
-many times. In the future, this is expected to be obsoleted by the
-component model async proposal, which will include a scalable waiting
-facility.
-
-##### Params
-
-- <a name="poll_oneoff.in">`in`</a>: list<[`pollable`](#pollable)>
-
-##### Return values
-
-- <a name="poll_oneoff.0"></a> list<`bool`>
-
-## <a name="wasi:io_streams">Import interface wasi:io/streams</a>
-
-WASI I/O is an I/O abstraction API which is currently focused on providing
-stream types.
-
-In the future, the component model is expected to add built-in stream types;
-when it does, they are expected to subsume this API.
-
-----
-
-### Types
-
-#### <a name="pollable">`type pollable`</a>
-[`pollable`](#pollable)
+being reaedy for I/O.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="poll_list.in"><code>in</code></a>: list&lt;borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="poll_list.0"></a> list&lt;<code>u32</code>&gt;</li>
+</ul>
+<h4><a name="poll_one"><code>poll-one: func</code></a></h4>
+<p>Poll for completion on a single pollable.</p>
+<p>This function is similar to <a href="#poll_list"><code>poll-list</code></a>, but operates on only a single
+pollable. When it returns, the handle is ready for I/O.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="poll_one.in"><code>in</code></a>: borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
+</ul>
+<h2><a name="wasi:io_streams">Import interface wasi:io/streams</a></h2>
+<p>WASI I/O is an I/O abstraction API which is currently focused on providing
+stream types.</p>
+<p>In the future, the component model is expected to add built-in stream types;
+when it does, they are expected to subsume this API.</p>
+<hr />
+<h3>Types</h3>
+<h4><a name="pollable"><code>type pollable</code></a></h4>
+<p><a href="#pollable"><a href="#pollable"><code>pollable</code></a></a></p>
 <p>
-#### <a name="stream_error">`record stream-error`</a>
-
-An error type returned from a stream operation. Currently this
-doesn't provide any additional information.
-
-##### Record Fields
-
-#### <a name="stream_status">`enum stream-status`</a>
-
-Streams provide a sequence of data and then end; once they end, they
-no longer provide any further data.
-
-For example, a stream reading from a file ends when the stream reaches
-the end of the file. For another example, a stream reading from a
-socket ends when the socket is closed.
-
-##### Enum Cases
-
-- <a name="stream_status.open">`open`</a>
-  <p>The stream is open and may produce further data.
-  
-- <a name="stream_status.ended">`ended`</a>
-  <p>The stream has ended and will not produce any further data.
-  
-#### <a name="input_stream">`type input-stream`</a>
-`u32`
-<p>An input bytestream. In the future, this will be replaced by handle
-types.
-
-This conceptually represents a `stream<u8, _>`. It's temporary
-scaffolding until component-model's async features are ready.
-
-`input-stream`s are *non-blocking* to the extent practical on underlying
+#### <a name="error">`resource error`</a>
+<p>Contextual error information about the last failure that happened on
+a read, write, or flush from an <a href="#input_stream"><code>input-stream</code></a> or <a href="#output_stream"><code>output-stream</code></a>.</p>
+<p>This type is returned through the <a href="#stream_error"><code>stream-error</code></a> type whenever an
+operation on a stream directly fails or an error is discovered
+after-the-fact, for example when a write's failure shows up through a
+later <code>flush</code> or <code>check-write</code>.</p>
+<p>Interfaces such as <code>wasi:filesystem/types</code> provide functionality to
+further &quot;downcast&quot; this error into interface-specific error information.</p>
+<h4><a name="stream_error"><code>variant stream-error</code></a></h4>
+<p>An error for input-stream and output-stream operations.</p>
+<h5>Variant Cases</h5>
+<ul>
+<li>
+<p><a name="stream_error.last_operation_failed"><code>last-operation-failed</code></a>: own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</p>
+<p>The last operation (a write or flush) failed before completion.
+<p>More information is available in the <a href="#error"><code>error</code></a> payload.</p>
+</li>
+<li>
+<p><a name="stream_error.closed"><code>closed</code></a></p>
+<p>The stream is closed: no more input will be accepted by the
+stream. A closed output-stream will return this error on all
+future operations.
+</li>
+</ul>
+<h4><a name="input_stream"><code>resource input-stream</code></a></h4>
+<p>An input bytestream.</p>
+<p><a href="#input_stream"><code>input-stream</code></a>s are <em>non-blocking</em> to the extent practical on underlying
 platforms. I/O operations always return promptly; if fewer bytes are
 promptly available than requested, they return the number of bytes promptly
 available, which could even be zero. To wait for data to be available,
-use the `subscribe-to-input-stream` function to obtain a `pollable` which
-can be polled for using `wasi_poll`.
-
-And at present, it is a `u32` instead of being an actual handle, until
-the wit-bindgen implementation of handles and resources is ready.
-
-This [represents a resource](https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources).
-
-#### <a name="output_stream">`type output-stream`</a>
-`u32`
-<p>An output bytestream. In the future, this will be replaced by handle
-types.
-
-This conceptually represents a `stream<u8, _>`. It's temporary
-scaffolding until component-model's async features are ready.
-
-`output-stream`s are *non-blocking* to the extent practical on
+use the <code>subscribe</code> function to obtain a <a href="#pollable"><code>pollable</code></a> which can be polled
+for using <a href="#wasi:io_poll"><code>wasi:io/poll</code></a>.</p>
+<h4><a name="output_stream"><code>resource output-stream</code></a></h4>
+<p>An output bytestream.</p>
+<h2><a href="#output_stream"><code>output-stream</code></a>s are <em>non-blocking</em> to the extent practical on
 underlying platforms. Except where specified otherwise, I/O operations also
 always return promptly, after the number of bytes that can be written
 promptly, which could even be zero. To wait for the stream to be ready to
-accept data, the `subscribe-to-output-stream` function to obtain a
-`pollable` which can be polled for using `wasi_poll`.
-
-And at present, it is a `u32` instead of being an actual handle, until
-the wit-bindgen implementation of handles and resources is ready.
-
-This [represents a resource](https://github.com/WebAssembly/WASI/blob/main/docs/WitInWasi.md#Resources).
-
-----
-
-### Functions
-
-#### <a name="read">`read: func`</a>
-
-Read bytes from a stream.
-
-This function returns a list of bytes containing the data that was
-read, along with a `stream-status` which indicates whether the end of
-the stream was reached. The returned list will contain up to `len`
-bytes; it may return fewer than requested, but not more.
-
-Once a stream has reached the end, subsequent calls to read or
-`skip` will always report end-of-stream rather than producing more
-data.
-
-If `len` is 0, it represents a request to read 0 bytes, which should
-always succeed, assuming the stream hasn't reached its end yet, and
-return an empty list.
-
-The len here is a `u64`, but some callees may not be able to allocate
-a buffer as large as that would imply.
-FIXME: describe what happens if allocation fails.
-
-##### Params
-
-- <a name="read.this">`this`</a>: [`input-stream`](#input_stream)
-- <a name="read.len">`len`</a>: `u64`
-
-##### Return values
-
-- <a name="read.0"></a> result<(list<`u8`>, [`stream-status`](#stream_status)), [`stream-error`](#stream_error)>
-
-#### <a name="blocking_read">`blocking-read: func`</a>
-
-Read bytes from a stream, with blocking.
-
-This is similar to `read`, except that it blocks until at least one
-byte can be read.
-
-##### Params
-
-- <a name="blocking_read.this">`this`</a>: [`input-stream`](#input_stream)
-- <a name="blocking_read.len">`len`</a>: `u64`
-
-##### Return values
-
-- <a name="blocking_read.0"></a> result<(list<`u8`>, [`stream-status`](#stream_status)), [`stream-error`](#stream_error)>
-
-#### <a name="skip">`skip: func`</a>
-
-Skip bytes from a stream.
-
-This is similar to the `read` function, but avoids copying the
-bytes into the instance.
-
-Once a stream has reached the end, subsequent calls to read or
-`skip` will always report end-of-stream rather than producing more
-data.
-
-This function returns the number of bytes skipped, along with a
-`stream-status` indicating whether the end of the stream was
-reached. The returned value will be at most `len`; it may be less.
-
-##### Params
-
-- <a name="skip.this">`this`</a>: [`input-stream`](#input_stream)
-- <a name="skip.len">`len`</a>: `u64`
-
-##### Return values
-
-- <a name="skip.0"></a> result<(`u64`, [`stream-status`](#stream_status)), [`stream-error`](#stream_error)>
-
-#### <a name="blocking_skip">`blocking-skip: func`</a>
-
-Skip bytes from a stream, with blocking.
-
-This is similar to `skip`, except that it blocks until at least one
-byte can be consumed.
-
-##### Params
-
-- <a name="blocking_skip.this">`this`</a>: [`input-stream`](#input_stream)
-- <a name="blocking_skip.len">`len`</a>: `u64`
-
-##### Return values
-
-- <a name="blocking_skip.0"></a> result<(`u64`, [`stream-status`](#stream_status)), [`stream-error`](#stream_error)>
-
-#### <a name="subscribe_to_input_stream">`subscribe-to-input-stream: func`</a>
-
-Create a `pollable` which will resolve once either the specified stream
+accept data, the <code>subscribe</code> function to obtain a <a href="#pollable"><code>pollable</code></a> which can be
+polled for using <a href="#wasi:io_poll"><code>wasi:io/poll</code></a>.</h2>
+<h3>Functions</h3>
+<h4><a name="method_error.to_debug_string"><code>[method]error.to-debug-string: func</code></a></h4>
+<p>Returns a string that's suitable to assist humans in debugging this
+error.</p>
+<p>The returned string will change across platforms and hosts which
+means that parsing it, for example, would be a
+platform-compatibility hazard.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_error.to_debug_string.self"><code>self</code></a>: borrow&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_error.to_debug_string.0"></a> <code>string</code></li>
+</ul>
+<h4><a name="method_input_stream.read"><code>[method]input-stream.read: func</code></a></h4>
+<p>Perform a non-blocking read from the stream.</p>
+<p>This function returns a list of bytes containing the read data,
+when successful. The returned list will contain up to <code>len</code> bytes;
+it may return fewer than requested, but not more. The list is
+empty when no bytes are available for reading at this time. The
+pollable given by <code>subscribe</code> will be ready when more bytes are
+available.</p>
+<p>This function fails with a <a href="#stream_error"><code>stream-error</code></a> when the operation
+encounters an error, giving <code>last-operation-failed</code>, or when the
+stream is closed, giving <code>closed</code>.</p>
+<p>When the caller gives a <code>len</code> of 0, it represents a request to
+read 0 bytes. If the stream is still open, this call should
+succeed and return an empty list, or otherwise fail with <code>closed</code>.</p>
+<p>The <code>len</code> parameter is a <code>u64</code>, which could represent a list of u8 which
+is not possible to allocate in wasm32, or not desirable to allocate as
+as a return value by the callee. The callee may return a list of bytes
+less than <code>len</code> in size while more bytes are available for reading.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_input_stream.read.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_input_stream.read.len"><code>len</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_input_stream.read.0"></a> result&lt;list&lt;<code>u8</code>&gt;, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_input_stream.blocking_read"><code>[method]input-stream.blocking-read: func</code></a></h4>
+<p>Read bytes from a stream, after blocking until at least one byte can
+be read. Except for blocking, behavior is identical to <code>read</code>.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_input_stream.blocking_read.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_input_stream.blocking_read.len"><code>len</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_input_stream.blocking_read.0"></a> result&lt;list&lt;<code>u8</code>&gt;, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_input_stream.skip"><code>[method]input-stream.skip: func</code></a></h4>
+<p>Skip bytes from a stream. Returns number of bytes skipped.</p>
+<p>Behaves identical to <code>read</code>, except instead of returning a list
+of bytes, returns the number of bytes consumed from the stream.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_input_stream.skip.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_input_stream.skip.len"><code>len</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_input_stream.skip.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_input_stream.blocking_skip"><code>[method]input-stream.blocking-skip: func</code></a></h4>
+<p>Skip bytes from a stream, after blocking until at least one byte
+can be skipped. Except for blocking behavior, identical to <code>skip</code>.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_input_stream.blocking_skip.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_input_stream.blocking_skip.len"><code>len</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_input_stream.blocking_skip.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_input_stream.subscribe"><code>[method]input-stream.subscribe: func</code></a></h4>
+<p>Create a <a href="#pollable"><code>pollable</code></a> which will resolve once either the specified stream
 has bytes available to read or the other end of the stream has been
 closed.
-
-##### Params
-
-- <a name="subscribe_to_input_stream.this">`this`</a>: [`input-stream`](#input_stream)
-
-##### Return values
-
-- <a name="subscribe_to_input_stream.0"></a> [`pollable`](#pollable)
-
-#### <a name="drop_input_stream">`drop-input-stream: func`</a>
-
-Dispose of the specified `input-stream`, after which it may no longer
-be used.
-
-##### Params
-
-- <a name="drop_input_stream.this">`this`</a>: [`input-stream`](#input_stream)
-
-#### <a name="write">`write: func`</a>
-
-Write bytes to a stream.
-
-This function returns a `u64` indicating the number of bytes from
-`buf` that were written; it may be less than the full list.
-
-##### Params
-
-- <a name="write.this">`this`</a>: [`output-stream`](#output_stream)
-- <a name="write.buf">`buf`</a>: list<`u8`>
-
-##### Return values
-
-- <a name="write.0"></a> result<`u64`, [`stream-error`](#stream_error)>
-
-#### <a name="blocking_write">`blocking-write: func`</a>
-
-Write bytes to a stream, with blocking.
-
-This is similar to `write`, except that it blocks until at least one
-byte can be written.
-
-##### Params
-
-- <a name="blocking_write.this">`this`</a>: [`output-stream`](#output_stream)
-- <a name="blocking_write.buf">`buf`</a>: list<`u8`>
-
-##### Return values
-
-- <a name="blocking_write.0"></a> result<`u64`, [`stream-error`](#stream_error)>
-
-#### <a name="write_zeroes">`write-zeroes: func`</a>
-
-Write multiple zero bytes to a stream.
-
-This function returns a `u64` indicating the number of zero bytes
-that were written; it may be less than `len`.
-
-##### Params
-
-- <a name="write_zeroes.this">`this`</a>: [`output-stream`](#output_stream)
-- <a name="write_zeroes.len">`len`</a>: `u64`
-
-##### Return values
-
-- <a name="write_zeroes.0"></a> result<`u64`, [`stream-error`](#stream_error)>
-
-#### <a name="blocking_write_zeroes">`blocking-write-zeroes: func`</a>
-
-Write multiple zero bytes to a stream, with blocking.
-
-This is similar to `write-zeroes`, except that it blocks until at least
-one byte can be written.
-
-##### Params
-
-- <a name="blocking_write_zeroes.this">`this`</a>: [`output-stream`](#output_stream)
-- <a name="blocking_write_zeroes.len">`len`</a>: `u64`
-
-##### Return values
-
-- <a name="blocking_write_zeroes.0"></a> result<`u64`, [`stream-error`](#stream_error)>
-
-#### <a name="splice">`splice: func`</a>
-
-Read from one stream and write to another.
-
-This function returns the number of bytes transferred; it may be less
-than `len`.
-
-Unlike other I/O functions, this function blocks until all the data
-read from the input stream has been written to the output stream.
-
-##### Params
-
-- <a name="splice.this">`this`</a>: [`output-stream`](#output_stream)
-- <a name="splice.src">`src`</a>: [`input-stream`](#input_stream)
-- <a name="splice.len">`len`</a>: `u64`
-
-##### Return values
-
-- <a name="splice.0"></a> result<(`u64`, [`stream-status`](#stream_status)), [`stream-error`](#stream_error)>
-
-#### <a name="blocking_splice">`blocking-splice: func`</a>
-
-Read from one stream and write to another, with blocking.
-
-This is similar to `splice`, except that it blocks until at least
-one byte can be read.
-
-##### Params
-
-- <a name="blocking_splice.this">`this`</a>: [`output-stream`](#output_stream)
-- <a name="blocking_splice.src">`src`</a>: [`input-stream`](#input_stream)
-- <a name="blocking_splice.len">`len`</a>: `u64`
-
-##### Return values
-
-- <a name="blocking_splice.0"></a> result<(`u64`, [`stream-status`](#stream_status)), [`stream-error`](#stream_error)>
-
-#### <a name="forward">`forward: func`</a>
-
-Forward the entire contents of an input stream to an output stream.
-
-This function repeatedly reads from the input stream and writes
-the data to the output stream, until the end of the input stream
-is reached, or an error is encountered.
-
-Unlike other I/O functions, this function blocks until the end
-of the input stream is seen and all the data has been written to
-the output stream.
-
-This function returns the number of bytes transferred.
-
-##### Params
-
-- <a name="forward.this">`this`</a>: [`output-stream`](#output_stream)
-- <a name="forward.src">`src`</a>: [`input-stream`](#input_stream)
-
-##### Return values
-
-- <a name="forward.0"></a> result<`u64`, [`stream-error`](#stream_error)>
-
-#### <a name="subscribe_to_output_stream">`subscribe-to-output-stream: func`</a>
-
-Create a `pollable` which will resolve once either the specified stream
-is ready to accept bytes or the other end of the stream has been closed.
-
-##### Params
-
-- <a name="subscribe_to_output_stream.this">`this`</a>: [`output-stream`](#output_stream)
-
-##### Return values
-
-- <a name="subscribe_to_output_stream.0"></a> [`pollable`](#pollable)
-
-#### <a name="drop_output_stream">`drop-output-stream: func`</a>
-
-Dispose of the specified `output-stream`, after which it may no longer
-be used.
-
-##### Params
-
-- <a name="drop_output_stream.this">`this`</a>: [`output-stream`](#output_stream)
-
-## <a name="wasi:keyvalue_wasi_cloud_error">Import interface wasi:keyvalue/wasi-cloud-error</a>
-
-
-----
-
-### Types
-
-#### <a name="error">`type error`</a>
-`u32`
+The created <a href="#pollable"><code>pollable</code></a> is a child resource of the <a href="#input_stream"><code>input-stream</code></a>.
+Implementations may trap if the <a href="#input_stream"><code>input-stream</code></a> is dropped before
+all derived <a href="#pollable"><code>pollable</code></a>s created with this function are dropped.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_input_stream.subscribe.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_input_stream.subscribe.0"></a> own&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.check_write"><code>[method]output-stream.check-write: func</code></a></h4>
+<p>Check readiness for writing. This function never blocks.</p>
+<p>Returns the number of bytes permitted for the next call to <code>write</code>,
+or an error. Calling <code>write</code> with more bytes than this function has
+permitted will trap.</p>
+<p>When this function returns 0 bytes, the <code>subscribe</code> pollable will
+become ready when this function will report at least 1 byte, or an
+error.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.check_write.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.check_write.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.write"><code>[method]output-stream.write: func</code></a></h4>
+<p>Perform a write. This function never blocks.</p>
+<p>Precondition: check-write gave permit of Ok(n) and contents has a
+length of less than or equal to n. Otherwise, this function will trap.</p>
+<p>returns Err(closed) without writing if the stream has closed since
+the last call to check-write provided a permit.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.write.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.write.contents"><code>contents</code></a>: list&lt;<code>u8</code>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.write.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.blocking_write_and_flush"><code>[method]output-stream.blocking-write-and-flush: func</code></a></h4>
+<p>Perform a write of up to 4096 bytes, and then flush the stream. Block
+until all of these operations are complete, or an error occurs.</p>
+<p>This is a convenience wrapper around the use of <code>check-write</code>,
+<code>subscribe</code>, <code>write</code>, and <code>flush</code>, and is implemented with the
+following pseudo-code:</p>
+<pre><code class="language-text">let pollable = this.subscribe();
+while !contents.is_empty() {
+  // Wait for the stream to become writable
+  poll-one(pollable);
+  let Ok(n) = this.check-write(); // eliding error handling
+  let len = min(n, contents.len());
+  let (chunk, rest) = contents.split_at(len);
+  this.write(chunk  );            // eliding error handling
+  contents = rest;
+}
+this.flush();
+// Wait for completion of `flush`
+poll-one(pollable);
+// Check for any errors that arose during `flush`
+let _ = this.check-write();         // eliding error handling
+</code></pre>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.blocking_write_and_flush.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.blocking_write_and_flush.contents"><code>contents</code></a>: list&lt;<code>u8</code>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.blocking_write_and_flush.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.flush"><code>[method]output-stream.flush: func</code></a></h4>
+<p>Request to flush buffered output. This function never blocks.</p>
+<p>This tells the output-stream that the caller intends any buffered
+output to be flushed. the output which is expected to be flushed
+is all that has been passed to <code>write</code> prior to this call.</p>
+<p>Upon calling this function, the <a href="#output_stream"><code>output-stream</code></a> will not accept any
+writes (<code>check-write</code> will return <code>ok(0)</code>) until the flush has
+completed. The <code>subscribe</code> pollable will become ready when the
+flush has completed and the stream can accept more writes.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.flush.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.flush.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.blocking_flush"><code>[method]output-stream.blocking-flush: func</code></a></h4>
+<p>Request to flush buffered output, and block until flush completes
+and stream is ready for writing again.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.blocking_flush.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.blocking_flush.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.subscribe"><code>[method]output-stream.subscribe: func</code></a></h4>
+<p>Create a <a href="#pollable"><code>pollable</code></a> which will resolve once the output-stream
+is ready for more writing, or an error has occured. When this
+pollable is ready, <code>check-write</code> will return <code>ok(n)</code> with n&gt;0, or an
+error.</p>
+<p>If the stream is closed, this pollable is always ready immediately.</p>
+<p>The created <a href="#pollable"><code>pollable</code></a> is a child resource of the <a href="#output_stream"><code>output-stream</code></a>.
+Implementations may trap if the <a href="#output_stream"><code>output-stream</code></a> is dropped before
+all derived <a href="#pollable"><code>pollable</code></a>s created with this function are dropped.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.subscribe.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.subscribe.0"></a> own&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.write_zeroes"><code>[method]output-stream.write-zeroes: func</code></a></h4>
+<p>Write zeroes to a stream.</p>
+<p>this should be used precisely like <code>write</code> with the exact same
+preconditions (must use check-write first), but instead of
+passing a list of bytes, you simply pass the number of zero-bytes
+that should be written.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.write_zeroes.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.write_zeroes.len"><code>len</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.write_zeroes.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.blocking_write_zeroes_and_flush"><code>[method]output-stream.blocking-write-zeroes-and-flush: func</code></a></h4>
+<p>Perform a write of up to 4096 zeroes, and then flush the stream.
+Block until all of these operations are complete, or an error
+occurs.</p>
+<p>This is a convenience wrapper around the use of <code>check-write</code>,
+<code>subscribe</code>, <code>write-zeroes</code>, and <code>flush</code>, and is implemented with
+the following pseudo-code:</p>
+<pre><code class="language-text">let pollable = this.subscribe();
+while num_zeroes != 0 {
+  // Wait for the stream to become writable
+  poll-one(pollable);
+  let Ok(n) = this.check-write(); // eliding error handling
+  let len = min(n, num_zeroes);
+  this.write-zeroes(len);         // eliding error handling
+  num_zeroes -= len;
+}
+this.flush();
+// Wait for completion of `flush`
+poll-one(pollable);
+// Check for any errors that arose during `flush`
+let _ = this.check-write();         // eliding error handling
+</code></pre>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.blocking_write_zeroes_and_flush.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.blocking_write_zeroes_and_flush.len"><code>len</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.blocking_write_zeroes_and_flush.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.splice"><code>[method]output-stream.splice: func</code></a></h4>
+<p>Read from one stream and write to another.</p>
+<p>The behavior of splice is equivelant to:</p>
+<ol>
+<li>calling <code>check-write</code> on the <a href="#output_stream"><code>output-stream</code></a></li>
+<li>calling <code>read</code> on the <a href="#input_stream"><code>input-stream</code></a> with the smaller of the
+<code>check-write</code> permitted length and the <code>len</code> provided to <code>splice</code></li>
+<li>calling <code>write</code> on the <a href="#output_stream"><code>output-stream</code></a> with that read data.</li>
+</ol>
+<p>Any error reported by the call to <code>check-write</code>, <code>read</code>, or
+<code>write</code> ends the splice and reports that error.</p>
+<p>This function returns the number of bytes transferred; it may be less
+than <code>len</code>.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.splice.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.splice.src"><code>src</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.splice.len"><code>len</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.splice.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_output_stream.blocking_splice"><code>[method]output-stream.blocking-splice: func</code></a></h4>
+<p>Read from one stream and write to another, with blocking.</p>
+<p>This is similar to <code>splice</code>, except that it blocks until the
+<a href="#output_stream"><code>output-stream</code></a> is ready for writing, and the <a href="#input_stream"><code>input-stream</code></a>
+is ready for reading, before performing the <code>splice</code>.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_output_stream.blocking_splice.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.blocking_splice.src"><code>src</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.blocking_splice.len"><code>len</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_output_stream.blocking_splice.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
+</ul>
+<h2><a name="wasi:keyvalue_wasi_cloud_error">Import interface wasi:keyvalue/wasi-cloud-error</a></h2>
+<hr />
+<h3>Types</h3>
+<h4><a name="error"><code>type error</code></a></h4>
+<p><code>u32</code></p>
 <p>An error resource type for keyvalue operations.
 Currently, this provides only one function to return a string representation
 of the error. In the future, this will be extended to provide more information
 about the error.
-
-----
-
-### Functions
-
-#### <a name="drop_error">`drop-error: func`</a>
-
-
-##### Params
-
-- <a name="drop_error.error">`error`</a>: [`error`](#error)
-
-#### <a name="trace">`trace: func`</a>
-
-
-##### Params
-
-- <a name="trace.error">`error`</a>: [`error`](#error)
-
-##### Return values
-
-- <a name="trace.0"></a> `string`
-
-## <a name="wasi:keyvalue_types">Import interface wasi:keyvalue/types</a>
-
-
-----
-
-### Types
-
-#### <a name="input_stream">`type input-stream`</a>
-[`input-stream`](#input_stream)
+<hr />
+<h3>Functions</h3>
+<h4><a name="drop_error"><code>drop-error: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="drop_error.error"><a href="#error"><code>error</code></a></a>: <a href="#error"><a href="#error"><code>error</code></a></a></li>
+</ul>
+<h4><a name="trace"><code>trace: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="trace.error"><a href="#error"><code>error</code></a></a>: <a href="#error"><a href="#error"><code>error</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="trace.0"></a> <code>string</code></li>
+</ul>
+<h2><a name="wasi:keyvalue_types">Import interface wasi:keyvalue/types</a></h2>
+<hr />
+<h3>Types</h3>
+<h4><a name="input_stream"><code>type input-stream</code></a></h4>
+<p><a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a></p>
 <p>
 #### <a name="output_stream">`type output-stream`</a>
 [`output-stream`](#output_stream)
@@ -481,36 +433,32 @@ about the error.
 <p>A bucket is a collection of key-value pairs. Each key-value pair is stored
 as a entry in the bucket, and the bucket itself acts as a collection of all
 these entries.
-
-It is worth noting that the exact terminology for bucket in key-value stores
-can very depending on the specific implementation. For example,
-1. Amazon DynamoDB calls a collection of key-value pairs a table
-2. Redis has hashes, sets, and sorted sets as different types of collections
-3. Cassandra calls a collection of key-value pairs a column family
-4. MongoDB calls a collection of key-value pairs a collection
-5. Riak calls a collection of key-value pairs a bucket
-6. Memcached calls a collection of key-value pairs a slab
-7. Azure Cosmos DB calls a collection of key-value pairs a container
-
-In this interface, we use the term `bucket` to refer to a collection of key-value
-
-#### <a name="key">`type key`</a>
-`string`
+<p>It is worth noting that the exact terminology for bucket in key-value stores
+can very depending on the specific implementation. For example,</p>
+<ol>
+<li>Amazon DynamoDB calls a collection of key-value pairs a table</li>
+<li>Redis has hashes, sets, and sorted sets as different types of collections</li>
+<li>Cassandra calls a collection of key-value pairs a column family</li>
+<li>MongoDB calls a collection of key-value pairs a collection</li>
+<li>Riak calls a collection of key-value pairs a bucket</li>
+<li>Memcached calls a collection of key-value pairs a slab</li>
+<li>Azure Cosmos DB calls a collection of key-value pairs a container</li>
+</ol>
+<p>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a collection of key-value</p>
+<h4><a name="key"><code>type key</code></a></h4>
+<p><code>string</code></p>
 <p>A key is a unique identifier for a value in a bucket. The key is used to
 retrieve the value from the bucket.
-
-#### <a name="keys">`type keys`</a>
-[`keys`](#keys)
+<h4><a name="keys"><code>type keys</code></a></h4>
+<p><a href="#keys"><a href="#keys"><code>keys</code></a></a></p>
 <p>A list of keys
-
-#### <a name="outgoing_value">`type outgoing-value`</a>
-`u32`
+<h4><a name="outgoing_value"><code>type outgoing-value</code></a></h4>
+<p><code>u32</code></p>
 <p>A value is the data stored in a key-value pair. The value can be of any type
 that can be represented in a byte array. It provides a way to write the value
 to the output-stream defined in the `wasi-io` interface.
-
-#### <a name="outgoing_value_body_async">`type outgoing-value-body-async`</a>
-[`output-stream`](#output_stream)
+<h4><a name="outgoing_value_body_async"><code>type outgoing-value-body-async</code></a></h4>
+<p><a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a></p>
 <p>
 #### <a name="outgoing_value_body_sync">`type outgoing-value-body-sync`</a>
 [`outgoing-value-body-sync`](#outgoing_value_body_sync)
@@ -519,128 +467,102 @@ to the output-stream defined in the `wasi-io` interface.
 `u32`
 <p>A incoming-value is a wrapper around a value. It provides a way to read the value
 from the input-stream defined in the `wasi-io` interface.
-
-The incoming-value provides two ways to consume the value:
-1. `incoming-value-consume-sync` consumes the value synchronously and returns the
-value as a list of bytes.
-2. `incoming-value-consume-async` consumes the value asynchronously and returns the
-value as an input-stream.
-
-#### <a name="incoming_value_async_body">`type incoming-value-async-body`</a>
-[`input-stream`](#input_stream)
+<p>The incoming-value provides two ways to consume the value:</p>
+<ol>
+<li><a href="#incoming_value_consume_sync"><code>incoming-value-consume-sync</code></a> consumes the value synchronously and returns the
+value as a list of bytes.</li>
+<li><a href="#incoming_value_consume_async"><code>incoming-value-consume-async</code></a> consumes the value asynchronously and returns the
+value as an input-stream.</li>
+</ol>
+<h4><a name="incoming_value_async_body"><code>type incoming-value-async-body</code></a></h4>
+<p><a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a></p>
 <p>
 #### <a name="incoming_value_sync_body">`type incoming-value-sync-body`</a>
 [`incoming-value-sync-body`](#incoming_value_sync_body)
 <p>
 ----
-
-### Functions
-
-#### <a name="drop_bucket">`drop-bucket: func`</a>
-
-
-##### Params
-
-- <a name="drop_bucket.bucket">`bucket`</a>: [`bucket`](#bucket)
-
-#### <a name="open_bucket">`open-bucket: func`</a>
-
-
-##### Params
-
-- <a name="open_bucket.name">`name`</a>: `string`
-
-##### Return values
-
-- <a name="open_bucket.0"></a> result<[`bucket`](#bucket), [`error`](#error)>
-
-#### <a name="drop_outgoing_value">`drop-outgoing-value: func`</a>
-
-
-##### Params
-
-- <a name="drop_outgoing_value.outgoing_value">`outgoing-value`</a>: [`outgoing-value`](#outgoing_value)
-
-#### <a name="new_outgoing_value">`new-outgoing-value: func`</a>
-
-
-##### Return values
-
-- <a name="new_outgoing_value.0"></a> [`outgoing-value`](#outgoing_value)
-
-#### <a name="outgoing_value_write_body_async">`outgoing-value-write-body-async: func`</a>
-
-
-##### Params
-
-- <a name="outgoing_value_write_body_async.outgoing_value">`outgoing-value`</a>: [`outgoing-value`](#outgoing_value)
-
-##### Return values
-
-- <a name="outgoing_value_write_body_async.0"></a> result<[`outgoing-value-body-async`](#outgoing_value_body_async), [`error`](#error)>
-
-#### <a name="outgoing_value_write_body_sync">`outgoing-value-write-body-sync: func`</a>
-
-
-##### Params
-
-- <a name="outgoing_value_write_body_sync.outgoing_value">`outgoing-value`</a>: [`outgoing-value`](#outgoing_value)
-- <a name="outgoing_value_write_body_sync.value">`value`</a>: [`outgoing-value-body-sync`](#outgoing_value_body_sync)
-
-##### Return values
-
-- <a name="outgoing_value_write_body_sync.0"></a> result<_, [`error`](#error)>
-
-#### <a name="drop_incoming_value">`drop-incoming-value: func`</a>
-
-
-##### Params
-
-- <a name="drop_incoming_value.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
-
-#### <a name="incoming_value_consume_sync">`incoming-value-consume-sync: func`</a>
-
-
-##### Params
-
-- <a name="incoming_value_consume_sync.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
-
-##### Return values
-
-- <a name="incoming_value_consume_sync.0"></a> result<[`incoming-value-sync-body`](#incoming_value_sync_body), [`error`](#error)>
-
-#### <a name="incoming_value_consume_async">`incoming-value-consume-async: func`</a>
-
-
-##### Params
-
-- <a name="incoming_value_consume_async.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
-
-##### Return values
-
-- <a name="incoming_value_consume_async.0"></a> result<[`incoming-value-async-body`](#incoming_value_async_body), [`error`](#error)>
-
-#### <a name="size">`size: func`</a>
-
-
-##### Params
-
-- <a name="size.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
-
-##### Return values
-
-- <a name="size.0"></a> `u64`
-
-## <a name="wasi:keyvalue_readwrite">Import interface wasi:keyvalue/readwrite</a>
-
-A keyvalue interface that provides simple read and write operations.
-
-----
-
-### Types
-
-#### <a name="bucket">`type bucket`</a>
-[`bucket`](#bucket)
+<h3>Functions</h3>
+<h4><a name="drop_bucket"><code>drop-bucket: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="drop_bucket.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+</ul>
+<h4><a name="open_bucket"><code>open-bucket: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="open_bucket.name"><code>name</code></a>: <code>string</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="open_bucket.0"></a> result&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="drop_outgoing_value"><code>drop-outgoing-value: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="drop_outgoing_value.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
+</ul>
+<h4><a name="new_outgoing_value"><code>new-outgoing-value: func</code></a></h4>
+<h5>Return values</h5>
+<ul>
+<li><a name="new_outgoing_value.0"></a> <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
+</ul>
+<h4><a name="outgoing_value_write_body_async"><code>outgoing-value-write-body-async: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="outgoing_value_write_body_async.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="outgoing_value_write_body_async.0"></a> result&lt;own&lt;<a href="#outgoing_value_body_async"><a href="#outgoing_value_body_async"><code>outgoing-value-body-async</code></a></a>&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="outgoing_value_write_body_sync"><code>outgoing-value-write-body-sync: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="outgoing_value_write_body_sync.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
+<li><a name="outgoing_value_write_body_sync.value"><code>value</code></a>: <a href="#outgoing_value_body_sync"><a href="#outgoing_value_body_sync"><code>outgoing-value-body-sync</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="outgoing_value_write_body_sync.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="drop_incoming_value"><code>drop-incoming-value: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="drop_incoming_value.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
+</ul>
+<h4><a name="incoming_value_consume_sync"><code>incoming-value-consume-sync: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="incoming_value_consume_sync.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="incoming_value_consume_sync.0"></a> result&lt;<a href="#incoming_value_sync_body"><a href="#incoming_value_sync_body"><code>incoming-value-sync-body</code></a></a>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="incoming_value_consume_async"><code>incoming-value-consume-async: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="incoming_value_consume_async.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="incoming_value_consume_async.0"></a> result&lt;own&lt;<a href="#incoming_value_async_body"><a href="#incoming_value_async_body"><code>incoming-value-async-body</code></a></a>&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="size"><code>size: func</code></a></h4>
+<h5>Params</h5>
+<ul>
+<li><a name="size.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="size.0"></a> <code>u64</code></li>
+</ul>
+<h2><a name="wasi:keyvalue_readwrite">Import interface wasi:keyvalue/readwrite</a></h2>
+<p>A keyvalue interface that provides simple read and write operations.</p>
+<hr />
+<h3>Types</h3>
+<h4><a name="bucket"><code>type bucket</code></a></h4>
+<p><a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></p>
 <p>
 #### <a name="error">`type error`</a>
 [`error`](#error)
@@ -655,81 +577,64 @@ A keyvalue interface that provides simple read and write operations.
 [`outgoing-value`](#outgoing_value)
 <p>
 ----
-
-### Functions
-
-#### <a name="get">`get: func`</a>
-
-Get the value associated with the key in the bucket. It returns a incoming-value
-that can be consumed to get the value.
-
-If the key does not exist in the bucket, it returns an error.
-
-##### Params
-
-- <a name="get.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="get.key">`key`</a>: [`key`](#key)
-
-##### Return values
-
-- <a name="get.0"></a> result<[`incoming-value`](#incoming_value), [`error`](#error)>
-
-#### <a name="set">`set: func`</a>
-
-Set the value associated with the key in the bucket. If the key already
-exists in the bucket, it overwrites the value.
-
-If the key does not exist in the bucket, it creates a new key-value pair.
-If any other error occurs, it returns an error.
-
-##### Params
-
-- <a name="set.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="set.key">`key`</a>: [`key`](#key)
-- <a name="set.outgoing_value">`outgoing-value`</a>: [`outgoing-value`](#outgoing_value)
-
-##### Return values
-
-- <a name="set.0"></a> result<_, [`error`](#error)>
-
-#### <a name="delete">`delete: func`</a>
-
-Delete the key-value pair associated with the key in the bucket.
-
-If the key does not exist in the bucket, it returns an error.
-
-##### Params
-
-- <a name="delete.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="delete.key">`key`</a>: [`key`](#key)
-
-##### Return values
-
-- <a name="delete.0"></a> result<_, [`error`](#error)>
-
-#### <a name="exists">`exists: func`</a>
-
-Check if the key exists in the bucket.
-
-##### Params
-
-- <a name="exists.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="exists.key">`key`</a>: [`key`](#key)
-
-##### Return values
-
-- <a name="exists.0"></a> result<`bool`, [`error`](#error)>
-
-## <a name="wasi:keyvalue_atomic">Import interface wasi:keyvalue/atomic</a>
-
-A keyvalue interface that provides atomic operations.
-
-----
-
-### Types
-
-#### <a name="bucket">`type bucket`</a>
-[`bucket`](#bucket)
+<h3>Functions</h3>
+<h4><a name="get"><code>get: func</code></a></h4>
+<p>Get the value associated with the key in the bucket. It returns a incoming-value
+that can be consumed to get the value.</p>
+<p>If the key does not exist in the bucket, it returns an error.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="get.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="get.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="get.0"></a> result&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="set"><code>set: func</code></a></h4>
+<p>Set the value associated with the key in the bucket. If the key already
+exists in the bucket, it overwrites the value.</p>
+<p>If the key does not exist in the bucket, it creates a new key-value pair.
+If any other error occurs, it returns an error.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="set.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="set.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="set.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="set.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="delete"><code>delete: func</code></a></h4>
+<p>Delete the key-value pair associated with the key in the bucket.</p>
+<p>If the key does not exist in the bucket, it returns an error.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="delete.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="delete.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="delete.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="exists"><code>exists: func</code></a></h4>
+<p>Check if the key exists in the bucket.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="exists.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="exists.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="exists.0"></a> result&lt;<code>bool</code>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h2><a name="wasi:keyvalue_atomic">Import interface wasi:keyvalue/atomic</a></h2>
+<p>A keyvalue interface that provides atomic operations.</p>
+<hr />
+<h3>Types</h3>
+<h4><a name="bucket"><code>type bucket</code></a></h4>
+<p><a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></p>
 <p>
 #### <a name="error">`type error`</a>
 [`error`](#error)
@@ -738,57 +643,44 @@ A keyvalue interface that provides atomic operations.
 [`key`](#key)
 <p>
 ----
-
-### Functions
-
-#### <a name="increment">`increment: func`</a>
-
-Atomically increment the value associated with the key in the bucket by the
-given delta. It returns the new value.
-
-If the key does not exist in the bucket, it creates a new key-value pair
-with the value set to the given delta.
-
-If any other error occurs, it returns an error.
-
-##### Params
-
-- <a name="increment.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="increment.key">`key`</a>: [`key`](#key)
-- <a name="increment.delta">`delta`</a>: `u64`
-
-##### Return values
-
-- <a name="increment.0"></a> result<`u64`, [`error`](#error)>
-
-#### <a name="compare_and_swap">`compare-and-swap: func`</a>
-
-Atomically compare and swap the value associated with the key in the bucket.
-It returns a boolean indicating if the swap was successful.
-
-If the key does not exist in the bucket, it returns an error.
-
-##### Params
-
-- <a name="compare_and_swap.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="compare_and_swap.key">`key`</a>: [`key`](#key)
-- <a name="compare_and_swap.old">`old`</a>: `u64`
-- <a name="compare_and_swap.new">`new`</a>: `u64`
-
-##### Return values
-
-- <a name="compare_and_swap.0"></a> result<`bool`, [`error`](#error)>
-
-## <a name="wasi:keyvalue_batch">Import interface wasi:keyvalue/batch</a>
-
-A keyvalue interface that provides batch operations.
-
-----
-
-### Types
-
-#### <a name="bucket">`type bucket`</a>
-[`bucket`](#bucket)
+<h3>Functions</h3>
+<h4><a name="increment"><code>increment: func</code></a></h4>
+<p>Atomically increment the value associated with the key in the bucket by the
+given delta. It returns the new value.</p>
+<p>If the key does not exist in the bucket, it creates a new key-value pair
+with the value set to the given delta.</p>
+<p>If any other error occurs, it returns an error.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="increment.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="increment.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="increment.delta"><code>delta</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="increment.0"></a> result&lt;<code>u64</code>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="compare_and_swap"><code>compare-and-swap: func</code></a></h4>
+<p>Atomically compare and swap the value associated with the key in the bucket.
+It returns a boolean indicating if the swap was successful.</p>
+<p>If the key does not exist in the bucket, it returns an error.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="compare_and_swap.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="compare_and_swap.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="compare_and_swap.old"><code>old</code></a>: <code>u64</code></li>
+<li><a name="compare_and_swap.new"><code>new</code></a>: <code>u64</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="compare_and_swap.0"></a> result&lt;<code>bool</code>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h2><a name="wasi:keyvalue_batch">Import interface wasi:keyvalue/batch</a></h2>
+<p>A keyvalue interface that provides batch operations.</p>
+<hr />
+<h3>Types</h3>
+<h4><a name="bucket"><code>type bucket</code></a></h4>
+<p><a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></p>
 <p>
 #### <a name="error">`type error`</a>
 [`error`](#error)
@@ -806,78 +698,62 @@ A keyvalue interface that provides batch operations.
 [`outgoing-value`](#outgoing_value)
 <p>
 ----
-
-### Functions
-
-#### <a name="get_many">`get-many: func`</a>
-
-Get the values associated with the keys in the bucket. It returns a list of
-incoming-values that can be consumed to get the values.
-
-If any of the keys do not exist in the bucket, it returns an error.
-
-##### Params
-
-- <a name="get_many.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="get_many.keys">`keys`</a>: [`keys`](#keys)
-
-##### Return values
-
-- <a name="get_many.0"></a> result<list<[`incoming-value`](#incoming_value)>, [`error`](#error)>
-
-#### <a name="get_keys">`get-keys: func`</a>
-
-Get all the keys in the bucket. It returns a list of keys.
-
-##### Params
-
-- <a name="get_keys.bucket">`bucket`</a>: [`bucket`](#bucket)
-
-##### Return values
-
-- <a name="get_keys.0"></a> [`keys`](#keys)
-
-#### <a name="set_many">`set-many: func`</a>
-
-Set the values associated with the keys in the bucket. If the key already
-exists in the bucket, it overwrites the value.
-
-If any of the keys do not exist in the bucket, it creates a new key-value pair.
-If any other error occurs, it returns an error.
-
-##### Params
-
-- <a name="set_many.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="set_many.key_values">`key-values`</a>: list<([`key`](#key), [`outgoing-value`](#outgoing_value))>
-
-##### Return values
-
-- <a name="set_many.0"></a> result<_, [`error`](#error)>
-
-#### <a name="delete_many">`delete-many: func`</a>
-
-Delete the key-value pairs associated with the keys in the bucket.
-
-If any of the keys do not exist in the bucket, it skips the key.
-If any other error occurs, it returns an error.
-
-##### Params
-
-- <a name="delete_many.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="delete_many.keys">`keys`</a>: [`keys`](#keys)
-
-##### Return values
-
-- <a name="delete_many.0"></a> result<_, [`error`](#error)>
-
-## <a name="wasi:keyvalue_handle_watch">Export interface wasi:keyvalue/handle-watch</a>
-
-----
-
-### Types
-
-#### <a name="bucket">`type bucket`</a>
-[`bucket`](#bucket)
+<h3>Functions</h3>
+<h4><a name="get_many"><code>get-many: func</code></a></h4>
+<p>Get the values associated with the keys in the bucket. It returns a list of
+incoming-values that can be consumed to get the values.</p>
+<p>If any of the keys do not exist in the bucket, it returns an error.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="get_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="get_many.keys"><a href="#keys"><code>keys</code></a></a>: <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="get_many.0"></a> result&lt;list&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="get_keys"><code>get-keys: func</code></a></h4>
+<p>Get all the keys in the bucket. It returns a list of keys.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="get_keys.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="get_keys.0"></a> <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
+</ul>
+<h4><a name="set_many"><code>set-many: func</code></a></h4>
+<p>Set the values associated with the keys in the bucket. If the key already
+exists in the bucket, it overwrites the value.</p>
+<p>If any of the keys do not exist in the bucket, it creates a new key-value pair.
+If any other error occurs, it returns an error.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="set_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="set_many.key_values"><code>key-values</code></a>: list&lt;(<a href="#key"><a href="#key"><code>key</code></a></a>, <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>)&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="set_many.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="delete_many"><code>delete-many: func</code></a></h4>
+<p>Delete the key-value pairs associated with the keys in the bucket.</p>
+<p>If any of the keys do not exist in the bucket, it skips the key.
+If any other error occurs, it returns an error.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="delete_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="delete_many.keys"><a href="#keys"><code>keys</code></a></a>: <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="delete_many.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h2><a name="wasi:keyvalue_handle_watch">Export interface wasi:keyvalue/handle-watch</a></h2>
+<hr />
+<h3>Types</h3>
+<h4><a name="bucket"><code>type bucket</code></a></h4>
+<p><a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></p>
 <p>
 #### <a name="key">`type key`</a>
 [`key`](#key)
@@ -886,26 +762,20 @@ If any other error occurs, it returns an error.
 [`incoming-value`](#incoming_value)
 <p>
 ----
-
-### Functions
-
-#### <a name="on_set">`on-set: func`</a>
-
-Handle the set event for the given bucket and key.
-It returns a incoming-value that can be consumed to get the value.
-
-##### Params
-
-- <a name="on_set.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="on_set.key">`key`</a>: [`key`](#key)
-- <a name="on_set.incoming_value">`incoming-value`</a>: [`incoming-value`](#incoming_value)
-
-#### <a name="on_delete">`on-delete: func`</a>
-
-Handle the delete event for the given bucket and key.
-
-##### Params
-
-- <a name="on_delete.bucket">`bucket`</a>: [`bucket`](#bucket)
-- <a name="on_delete.key">`key`</a>: [`key`](#key)
-
+<h3>Functions</h3>
+<h4><a name="on_set"><code>on-set: func</code></a></h4>
+<p>Handle the set event for the given bucket and key.
+It returns a incoming-value that can be consumed to get the value.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="on_set.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="on_set.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="on_set.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
+</ul>
+<h4><a name="on_delete"><code>on-delete: func</code></a></h4>
+<p>Handle the delete event for the given bucket and key.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="on_delete.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="on_delete.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+</ul>
