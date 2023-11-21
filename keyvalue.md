@@ -2,8 +2,9 @@
 <ul>
 <li>Imports:
 <ul>
-<li>interface <a href="#wasi:io_poll"><code>wasi:io/poll</code></a></li>
-<li>interface <a href="#wasi:io_streams"><code>wasi:io/streams</code></a></li>
+<li>interface <a href="#wasi:io_error_0.2.0_rc_2023_11_10"><code>wasi:io/error@0.2.0-rc-2023-11-10</code></a></li>
+<li>interface <a href="#wasi:io_poll_0.2.0_rc_2023_11_10"><code>wasi:io/poll@0.2.0-rc-2023-11-10</code></a></li>
+<li>interface <a href="#wasi:io_streams_0.2.0_rc_2023_11_10"><code>wasi:io/streams@0.2.0-rc-2023-11-10</code></a></li>
 <li>interface <a href="#wasi:keyvalue_wasi_cloud_error"><code>wasi:keyvalue/wasi-cloud-error</code></a></li>
 <li>interface <a href="#wasi:keyvalue_types"><code>wasi:keyvalue/types</code></a></li>
 <li>interface <a href="#wasi:keyvalue_readwrite"><code>wasi:keyvalue/readwrite</code></a></li>
@@ -12,15 +13,70 @@
 </ul>
 </li>
 </ul>
-<h2><a name="wasi:io_poll">Import interface wasi:io/poll</a></h2>
+<h2><a name="wasi:io_error_0.2.0_rc_2023_11_10">Import interface wasi:io/error@0.2.0-rc-2023-11-10</a></h2>
+<hr />
+<h3>Types</h3>
+<h4><a name="error"><code>resource error</code></a></h4>
+<p>A resource which represents some error information.</p>
+<p>The only method provided by this resource is <code>to-debug-string</code>,
+which provides some human-readable information about the error.</p>
+<p>In the <code>wasi:io</code> package, this resource is returned through the
+<code>wasi:io/streams/stream-error</code> type.</p>
+<p>To provide more specific error information, other interfaces may
+provide functions to further &quot;downcast&quot; this error into more specific
+error information. For example, <a href="#error"><code>error</code></a>s returned in streams derived
+from filesystem types to be described using the filesystem's own
+error-code type, using the function
+<code>wasi:filesystem/types/filesystem-error-code</code>, which takes a parameter
+<code>borrow&lt;error&gt;</code> and returns
+<code>option&lt;wasi:filesystem/types/error-code&gt;</code>.</p>
+<h2>The set of functions which can &quot;downcast&quot; an <a href="#error"><code>error</code></a> into a more
+concrete type is open.</h2>
+<h3>Functions</h3>
+<h4><a name="method_error.to_debug_string"><code>[method]error.to-debug-string: func</code></a></h4>
+<p>Returns a string that is suitable to assist humans in debugging
+this error.</p>
+<p>WARNING: The returned string should not be consumed mechanically!
+It may change across platforms, hosts, or other implementation
+details. Parsing this string is a major platform-compatibility
+hazard.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_error.to_debug_string.self"><code>self</code></a>: borrow&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_error.to_debug_string.0"></a> <code>string</code></li>
+</ul>
+<h2><a name="wasi:io_poll_0.2.0_rc_2023_11_10">Import interface wasi:io/poll@0.2.0-rc-2023-11-10</a></h2>
 <p>A poll API intended to let users wait for I/O events on multiple handles
 at once.</p>
 <hr />
 <h3>Types</h3>
 <h4><a name="pollable"><code>resource pollable</code></a></h4>
-<h2>A &quot;pollable&quot; handle.</h2>
+<h2><a href="#pollable"><code>pollable</code></a> epresents a single I/O event which may be ready, or not.</h2>
 <h3>Functions</h3>
-<h4><a name="poll_list"><code>poll-list: func</code></a></h4>
+<h4><a name="method_pollable.ready"><code>[method]pollable.ready: func</code></a></h4>
+<p>Return the readiness of a pollable. This function never blocks.</p>
+<p>Returns <code>true</code> when the pollable is ready, and <code>false</code> otherwise.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_pollable.ready.self"><code>self</code></a>: borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_pollable.ready.0"></a> <code>bool</code></li>
+</ul>
+<h4><a name="method_pollable.block"><code>[method]pollable.block: func</code></a></h4>
+<p><code>block</code> returns immediately if the pollable is ready, and otherwise
+blocks until ready.</p>
+<p>This function is equivalent to calling <code>poll.poll</code> on a list
+containing only this pollable.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_pollable.block.self"><code>self</code></a>: borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
+</ul>
+<h4><a name="poll"><code>poll: func</code></a></h4>
 <p>Poll for completion on a set of pollables.</p>
 <p>This function takes a list of pollables, which identify I/O sources of
 interest, and waits until one or more of the events is ready for I/O.</p>
@@ -36,40 +92,26 @@ the pollables has an error, it is indicated by marking the source as
 being reaedy for I/O.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="poll_list.in"><code>in</code></a>: list&lt;borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;&gt;</li>
+<li><a name="poll.in"><code>in</code></a>: list&lt;borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="poll_list.0"></a> list&lt;<code>u32</code>&gt;</li>
+<li><a name="poll.0"></a> list&lt;<code>u32</code>&gt;</li>
 </ul>
-<h4><a name="poll_one"><code>poll-one: func</code></a></h4>
-<p>Poll for completion on a single pollable.</p>
-<p>This function is similar to <a href="#poll_list"><code>poll-list</code></a>, but operates on only a single
-pollable. When it returns, the handle is ready for I/O.</p>
-<h5>Params</h5>
-<ul>
-<li><a name="poll_one.in"><code>in</code></a>: borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
-</ul>
-<h2><a name="wasi:io_streams">Import interface wasi:io/streams</a></h2>
+<h2><a name="wasi:io_streams_0.2.0_rc_2023_11_10">Import interface wasi:io/streams@0.2.0-rc-2023-11-10</a></h2>
 <p>WASI I/O is an I/O abstraction API which is currently focused on providing
 stream types.</p>
 <p>In the future, the component model is expected to add built-in stream types;
 when it does, they are expected to subsume this API.</p>
 <hr />
 <h3>Types</h3>
-<h4><a name="pollable"><code>type pollable</code></a></h4>
-<p><a href="#pollable"><a href="#pollable"><code>pollable</code></a></a></p>
+<h4><a name="error"><code>type error</code></a></h4>
+<p><a href="#error"><a href="#error"><code>error</code></a></a></p>
 <p>
-#### <a name="error">`resource error`</a>
-<p>Contextual error information about the last failure that happened on
-a read, write, or flush from an <a href="#input_stream"><code>input-stream</code></a> or <a href="#output_stream"><code>output-stream</code></a>.</p>
-<p>This type is returned through the <a href="#stream_error"><code>stream-error</code></a> type whenever an
-operation on a stream directly fails or an error is discovered
-after-the-fact, for example when a write's failure shows up through a
-later <code>flush</code> or <code>check-write</code>.</p>
-<p>Interfaces such as <code>wasi:filesystem/types</code> provide functionality to
-further &quot;downcast&quot; this error into interface-specific error information.</p>
-<h4><a name="stream_error"><code>variant stream-error</code></a></h4>
+#### <a name="pollable">`type pollable`</a>
+[`pollable`](#pollable)
+<p>
+#### <a name="stream_error">`variant stream-error`</a>
 <p>An error for input-stream and output-stream operations.</p>
 <h5>Variant Cases</h5>
 <ul>
@@ -92,7 +134,7 @@ platforms. I/O operations always return promptly; if fewer bytes are
 promptly available than requested, they return the number of bytes promptly
 available, which could even be zero. To wait for data to be available,
 use the <code>subscribe</code> function to obtain a <a href="#pollable"><code>pollable</code></a> which can be polled
-for using <a href="#wasi:io_poll"><code>wasi:io/poll</code></a>.</p>
+for using <code>wasi:io/poll</code>.</p>
 <h4><a name="output_stream"><code>resource output-stream</code></a></h4>
 <p>An output bytestream.</p>
 <h2><a href="#output_stream"><code>output-stream</code></a>s are <em>non-blocking</em> to the extent practical on
@@ -100,22 +142,8 @@ underlying platforms. Except where specified otherwise, I/O operations also
 always return promptly, after the number of bytes that can be written
 promptly, which could even be zero. To wait for the stream to be ready to
 accept data, the <code>subscribe</code> function to obtain a <a href="#pollable"><code>pollable</code></a> which can be
-polled for using <a href="#wasi:io_poll"><code>wasi:io/poll</code></a>.</h2>
+polled for using <code>wasi:io/poll</code>.</h2>
 <h3>Functions</h3>
-<h4><a name="method_error.to_debug_string"><code>[method]error.to-debug-string: func</code></a></h4>
-<p>Returns a string that's suitable to assist humans in debugging this
-error.</p>
-<p>The returned string will change across platforms and hosts which
-means that parsing it, for example, would be a
-platform-compatibility hazard.</p>
-<h5>Params</h5>
-<ul>
-<li><a name="method_error.to_debug_string.self"><code>self</code></a>: borrow&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
-</ul>
-<h5>Return values</h5>
-<ul>
-<li><a name="method_error.to_debug_string.0"></a> <code>string</code></li>
-</ul>
 <h4><a name="method_input_stream.read"><code>[method]input-stream.read: func</code></a></h4>
 <p>Perform a non-blocking read from the stream.</p>
 <p>This function returns a list of bytes containing the read data,
