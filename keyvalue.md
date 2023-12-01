@@ -672,7 +672,7 @@ at all.</p>
 <h3>Functions</h3>
 <h4><a name="increment"><code>increment: func</code></a></h4>
 <p>Atomically increment the value associated with the key in the bucket by the
-given delta. It returns the new value. This is single, indivisible operation.</p>
+given delta. It returns the new value. This is a single, indivisible operation.</p>
 <p>If the key does not exist in the bucket, it creates a new key-value pair
 with the value set to the given delta.</p>
 <p>If any other error occurs, it returns an error.</p>

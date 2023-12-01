@@ -9,7 +9,7 @@ interface atomic {
 	use types.{bucket, error, key};
 
 	/// Atomically increment the value associated with the key in the bucket by the 
-	/// given delta. It returns the new value. This is single, indivisible operation.
+	/// given delta. It returns the new value. This is a single, indivisible operation.
 	///
 	/// If the key does not exist in the bucket, it creates a new key-value pair
 	/// with the value set to the given delta. 
