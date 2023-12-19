@@ -16,9 +16,9 @@
 /// write operation completes, all subsequent read operations will return the
 /// value that was written.
 /// 
-/// The level of consistency in batch operations can vary depending on the 
-/// implementation. This interface does not guarantee strong consistency, meaning
-/// that if a write operation completes, subsequent read operations may not return
+/// The level of consistency in batch operations is **eventual consistency**, the same
+/// with the readwrite interface. This interface does not guarantee strong consistency, 
+/// meaning that if a write operation completes, subsequent read operations may not return
 /// the value that was written.
 interface batch {
 	/// A keyvalue interface that provides batch get operations.
