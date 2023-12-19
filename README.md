@@ -112,7 +112,8 @@ This proposal was inspired by Dapr's [State API]
 [State API](https://docs.dapr.io/developing-applications/building-blocks/state-management/)
 
 ### Change log
-
+- 2023-12-19:
+  - Changed the `size` to `incoming-value-size` and it's signature
 - 2023-11-30: 
   - Changed the `get` and `get-many` and `keys` signatures
   - Updated comments in all the interfaces.

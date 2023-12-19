@@ -494,13 +494,16 @@ to the output-stream defined in the <code>wasi-io</code> interface.</p>
 <p>
 #### <a name="incoming_value">`resource incoming-value`</a>
 <p>A incoming-value is a wrapper around a value. It provides a way to read the value
-from the input-stream defined in the <code>wasi-io</code> interface.</p>
+from the <a href="#input_stream"><code>input-stream</code></a> defined in the <code>wasi-io</code> interface.</p>
 <p>The incoming-value provides two ways to consume the value:</p>
 <ol>
 <li><code>incoming-value-consume-sync</code> consumes the value synchronously and returns the
-value as a list of bytes.</li>
+value as a <code>list&lt;u8&gt;</code>.</li>
 <li><code>incoming-value-consume-async</code> consumes the value asynchronously and returns the
-value as an input-stream.</li>
+value as an <a href="#input_stream"><code>input-stream</code></a>.
+In addition, it provides a <code>incoming-value-size</code> function to get the size of the value.
+This is useful when the value is large and the caller wants to allocate a buffer of
+the right size to consume the value.</li>
 </ol>
 <h4><a name="incoming_value_async_body"><code>type incoming-value-async-body</code></a></h4>
 <p><a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a></p>
@@ -511,6 +514,8 @@ value as an input-stream.</li>
 ----
 <h3>Functions</h3>
 <h4><a name="static_bucket.open_bucket"><code>[static]bucket.open-bucket: func</code></a></h4>
+<p>Opens a bucket with the given name.</p>
+<p>If any error occurs, including if the bucket does not exist, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="static_bucket.open_bucket.name"><code>name</code></a>: <code>string</code></li>
@@ -525,6 +530,8 @@ value as an input-stream.</li>
 <li><a name="static_outgoing_value.new_outgoing_value.0"></a> own&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
 </ul>
 <h4><a name="method_outgoing_value.outgoing_value_write_body_async"><code>[method]outgoing-value.outgoing-value-write-body-async: func</code></a></h4>
+<p>Writes the value to the output-stream asynchronously.
+If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="method_outgoing_value.outgoing_value_write_body_async.self"><code>self</code></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
@@ -534,6 +541,8 @@ value as an input-stream.</li>
 <li><a name="method_outgoing_value.outgoing_value_write_body_async.0"></a> result&lt;own&lt;<a href="#outgoing_value_body_async"><a href="#outgoing_value_body_async"><code>outgoing-value-body-async</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="method_outgoing_value.outgoing_value_write_body_sync"><code>[method]outgoing-value.outgoing-value-write-body-sync: func</code></a></h4>
+<p>Writes the value to the output-stream synchronously.
+If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="method_outgoing_value.outgoing_value_write_body_sync.self"><code>self</code></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
@@ -544,6 +553,8 @@ value as an input-stream.</li>
 <li><a name="method_outgoing_value.outgoing_value_write_body_sync.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="method_incoming_value.incoming_value_consume_sync"><code>[method]incoming-value.incoming-value-consume-sync: func</code></a></h4>
+<p>Consumes the value synchronously and returns the value as a list of bytes.
+If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="method_incoming_value.incoming_value_consume_sync.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
@@ -553,6 +564,8 @@ value as an input-stream.</li>
 <li><a name="method_incoming_value.incoming_value_consume_sync.0"></a> result&lt;<a href="#incoming_value_sync_body"><a href="#incoming_value_sync_body"><code>incoming-value-sync-body</code></a></a>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="method_incoming_value.incoming_value_consume_async"><code>[method]incoming-value.incoming-value-consume-async: func</code></a></h4>
+<p>Consumes the value asynchronously and returns the value as an <a href="#input_stream"><code>input-stream</code></a>.
+If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="method_incoming_value.incoming_value_consume_async.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
@@ -561,14 +574,16 @@ value as an input-stream.</li>
 <ul>
 <li><a name="method_incoming_value.incoming_value_consume_async.0"></a> result&lt;own&lt;<a href="#incoming_value_async_body"><a href="#incoming_value_async_body"><code>incoming-value-async-body</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="method_incoming_value.size"><code>[method]incoming-value.size: func</code></a></h4>
+<h4><a name="method_incoming_value.incoming_value_size"><code>[method]incoming-value.incoming-value-size: func</code></a></h4>
+<p>The size of the value in bytes.
+If the size is unknown or unavailable, this function returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_incoming_value.size.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
+<li><a name="method_incoming_value.incoming_value_size.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="method_incoming_value.size.0"></a> <code>u64</code></li>
+<li><a name="method_incoming_value.incoming_value_size.0"></a> result&lt;<code>u64</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h2><a name="wasi:keyvalue_readwrite">Import interface wasi:keyvalue/readwrite</a></h2>
 <p>A keyvalue interface that provides simple read and write operations.</p>
