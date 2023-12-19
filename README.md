@@ -114,7 +114,7 @@ This proposal was inspired by Dapr's [State API]
 ### Change log
 
 - 2023-11-30: 
-  - Changed the `get` and `get-many` and `get-keys` signatures
+  - Changed the `get` and `get-many` and `keys` signatures
   - Updated comments in all the interfaces.
   - Renamed `wasi-cloud-error` to `wasi-keyvalue-error`
 - 2023-05-17: Updated batch example to use one interface instead of 2
