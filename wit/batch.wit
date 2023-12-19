@@ -22,7 +22,7 @@
 /// the value that was written.
 interface batch {
 	/// A keyvalue interface that provides batch get operations.
-	use types.{bucket, error, key, keys, incoming-value, outgoing-value};
+	use types.{bucket, error, key, incoming-value, outgoing-value};
 
 	/// Get the values associated with the keys in the bucket. It returns a list of
 	/// incoming-value that can be consumed to get the value associated with the key.
@@ -35,7 +35,7 @@ interface batch {
 	/// MAY show an out-of-date value if there are concurrent writes to the bucket.
 	/// 
 	/// If any other error occurs, it returns an `Err(error)`.
-	get-many: func(bucket: borrow<bucket>, keys: keys) -> result<list<option<incoming-value>>, error>;
+	get-many: func(bucket: borrow<bucket>, keys: list<key>) -> result<list<option<incoming-value>>, error>;
 
 	/// Get all the keys in the bucket. It returns a list of keys.
 	/// 
@@ -46,7 +46,7 @@ interface batch {
 	/// MAY show an out-of-date list of keys if there are concurrent writes to the bucket.
 	/// 
 	/// If any error occurs, it returns an `Err(error)`.
-	get-keys: func(bucket: borrow<bucket>) -> result<keys, error>;
+	keys: func(bucket: borrow<bucket>) -> result<list<key>, error>;
 
 	/// Set the values associated with the keys in the bucket. If the key already
 	/// exists in the bucket, it overwrites the value. 
@@ -77,5 +77,5 @@ interface batch {
 	/// deleted while others might fail.
 	/// 
 	/// Other concurrent operations may also be able to see the partial results.
-	delete-many: func(bucket: borrow<bucket>, keys: keys) -> result<_, error>;
+	delete-many: func(bucket: borrow<bucket>, keys: list<key>) -> result<_, error>;
 }

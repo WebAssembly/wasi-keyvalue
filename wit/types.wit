@@ -23,9 +23,6 @@ interface types {
 	/// retrieve the value from the bucket.
 	type key = string;
 
-	/// A list of keys
-	type keys = list<key>;
-
 	use wasi:io/streams@0.2.0-rc-2023-11-10.{input-stream, output-stream};
 	use wasi-keyvalue-error.{ error };
 	/// A value is the data stored in a key-value pair. The value can be of any type
