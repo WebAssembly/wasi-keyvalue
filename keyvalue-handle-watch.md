@@ -428,7 +428,7 @@ is ready for reading, before performing the <code>splice</code>.</p>
 <ul>
 <li>Connectivity errors (e.g. network errors): when the client cannot establish
 a connection to the keyvalue service.</li>
-<li>Autnetication and Authorization errors: when the client fails to authenticate
+<li>Authentication and Authorization errors: when the client fails to authenticate
 or does not have the required permissions to perform the operation.</li>
 <li>Data errors: when the client sends incompatible or corrupted data.</li>
 <li>Resource errors: when the system runs out of resources (e.g. memory).</li>
@@ -479,9 +479,6 @@ can very depending on the specific implementation. For example,</p>
 <p><code>string</code></p>
 <p>A key is a unique identifier for a value in a bucket. The key is used to
 retrieve the value from the bucket.
-<h4><a name="keys"><code>type keys</code></a></h4>
-<p><a href="#keys"><a href="#keys"><code>keys</code></a></a></p>
-<p>A list of keys
 <h4><a name="outgoing_value"><code>resource outgoing-value</code></a></h4>
 <p>A value is the data stored in a key-value pair. The value can be of any type
 that can be represented in a byte array. It provides a way to write the value
@@ -572,6 +569,21 @@ value as an input-stream.</li>
 </ul>
 <h2><a name="wasi:keyvalue_readwrite">Import interface wasi:keyvalue/readwrite</a></h2>
 <p>A keyvalue interface that provides simple read and write operations.</p>
+<p>A read/write operation is an operation that acts on a single key-value pair.</p>
+<p>The value in the key-value pair is defined as a <code>u8</code> byte array and the intention
+is that it is the common denominator for all data types defined by different
+key-value stores to handle data, ensuring compatibility between different
+key-value stores. Note: the clients will be expecting serialization/deserialization overhead
+to be handled by the key-value store. The value could be a serialized object from
+JSON, HTML or vendor-specific data types like AWS S3 objects.</p>
+<p>Data consistency in a key value store refers to the gaurantee that once a
+write operation completes, all subsequent read operations will return the
+value that was written.</p>
+<p>The level of consistency in readwrite interfaces is <strong>eventual consistency</strong>,
+which means that if a write operation completes successfully, all subsequent
+read operations will eventually return the value that was written. In other words,
+if we pause the updates to the system, the system eventually will return
+the last updated value for read.</p>
 <hr />
 <h3>Types</h3>
 <h4><a name="bucket"><code>type bucket</code></a></h4>
@@ -594,9 +606,9 @@ value as an input-stream.</li>
 <h4><a name="get"><code>get: func</code></a></h4>
 <p>Get the value associated with the key in the bucket.</p>
 <p>The value is returned as an option. If the key-value pair exists in the
-bucket, it returns ok with the value. If the key does not exist in the
-bucket, it returns ok with none.</p>
-<p>If any other error occurs, it returns an error.</p>
+bucket, it returns <code>Ok(value)</code>. If the key does not exist in the
+bucket, it returns <code>Ok(none)</code>.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="get.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -610,7 +622,7 @@ bucket, it returns ok with none.</p>
 <p>Set the value associated with the key in the bucket. If the key already
 exists in the bucket, it overwrites the value.</p>
 <p>If the key does not exist in the bucket, it creates a new key-value pair.</p>
-<p>If any other error occurs, it returns an error.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="set.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -624,7 +636,7 @@ exists in the bucket, it overwrites the value.</p>
 <h4><a name="delete"><code>delete: func</code></a></h4>
 <p>Delete the key-value pair associated with the key in the bucket.</p>
 <p>If the key does not exist in the bucket, it does nothing.</p>
-<p>If any other error occurs, it returns an error.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="delete.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -636,9 +648,9 @@ exists in the bucket, it overwrites the value.</p>
 </ul>
 <h4><a name="exists"><code>exists: func</code></a></h4>
 <p>Check if the key exists in the bucket.</p>
-<p>If the key exists in the bucket, it returns ok with true. If the key does
-not exist in the bucket, it returns ok with false.</p>
-<p>If any other error occurs, it returns an error.</p>
+<p>If the key exists in the bucket, it returns <code>Ok(true)</code>. If the key does
+not exist in the bucket, it returns <code>Ok(false)</code>.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="exists.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -669,10 +681,10 @@ at all.</p>
 <h3>Functions</h3>
 <h4><a name="increment"><code>increment: func</code></a></h4>
 <p>Atomically increment the value associated with the key in the bucket by the
-given delta. It returns the new value. This is a single, indivisible operation.</p>
+given delta. It returns the new value.</p>
 <p>If the key does not exist in the bucket, it creates a new key-value pair
 with the value set to the given delta.</p>
-<p>If any other error occurs, it returns an error.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="increment.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -686,11 +698,11 @@ with the value set to the given delta.</p>
 <h4><a name="compare_and_swap"><code>compare-and-swap: func</code></a></h4>
 <p>Compare-and-swap (CAS) atomically updates the value associated with the key
 in the bucket if the value matches the old value. This operation returns
-Ok(true) if the swap was successful, Ok(false) if the value did not match,</p>
+<code>Ok(true)</code> if the swap was successful, <code>Ok(false)</code> if the value did not match,</p>
 <p>A successful CAS operation means the current value matched the <code>old</code> value
 and was replaced with the <code>new</code> value.</p>
-<p>If the key does not exist in the bucket, it returns Ok(false).</p>
-<p>If any other error occurs, it returns an error.</p>
+<p>If the key does not exist in the bucket, it returns <code>Ok(false)</code>.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="compare_and_swap.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -716,9 +728,9 @@ provide atomicity.</p>
 <p>Data consistency in a key value store refers to the gaurantee that once a
 write operation completes, all subsequent read operations will return the
 value that was written.</p>
-<p>The level of consistency in batch operations can vary depending on the
-implementation. This interface does not guarantee strong consistency, meaning
-that if a write operation completes, subsequent read operations may not return
+<p>The level of consistency in batch operations is <strong>eventual consistency</strong>, the same
+with the readwrite interface. This interface does not guarantee strong consistency,
+meaning that if a write operation completes, subsequent read operations may not return
 the value that was written.</p>
 <hr />
 <h3>Types</h3>
@@ -731,9 +743,6 @@ the value that was written.</p>
 #### <a name="key">`type key`</a>
 [`key`](#key)
 <p>
-#### <a name="keys">`type keys`</a>
-[`keys`](#keys)
-<p>
 #### <a name="incoming_value">`type incoming-value`</a>
 [`incoming-value`](#incoming_value)
 <p>
@@ -745,33 +754,33 @@ the value that was written.</p>
 <h4><a name="get_many"><code>get-many: func</code></a></h4>
 <p>Get the values associated with the keys in the bucket. It returns a list of
 incoming-value that can be consumed to get the value associated with the key.</p>
-<p>If any of the keys do not exist in the bucket, it returns an None value for
+<p>If any of the keys do not exist in the bucket, it returns a <code>none</code> value for
 that key in the list.</p>
 <p>Note that the key-value pairs are guaranteed to be returned in the same order</p>
 <p>MAY show an out-of-date value if there are concurrent writes to the bucket.</p>
-<p>If any other error occurs, it returns an error.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="get_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="get_many.keys"><a href="#keys"><code>keys</code></a></a>: <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
+<li><a name="get_many.keys"><a href="#keys"><code>keys</code></a></a>: list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="get_many.0"></a> result&lt;list&lt;option&lt;own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;&gt;&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="get_keys"><code>get-keys: func</code></a></h4>
+<h4><a name="keys"><code>keys: func</code></a></h4>
 <p>Get all the keys in the bucket. It returns a list of keys.</p>
 <p>Note that the keys are not guaranteed to be returned in any particular order.</p>
 <p>If the bucket is empty, it returns an empty list.</p>
 <p>MAY show an out-of-date list of keys if there are concurrent writes to the bucket.</p>
-<p>If any error occurs, it returns an error.</p>
+<p>If any error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="get_keys.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="keys.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="get_keys.0"></a> result&lt;<a href="#keys"><a href="#keys"><code>keys</code></a></a>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
+<li><a name="keys.0"></a> result&lt;list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="set_many"><code>set-many: func</code></a></h4>
 <p>Set the values associated with the keys in the bucket. If the key already
@@ -779,7 +788,7 @@ exists in the bucket, it overwrites the value.</p>
 <p>Note that the key-value pairs are not guaranteed to be set in the order
 they are provided.</p>
 <p>If any of the keys do not exist in the bucket, it creates a new key-value pair.</p>
-<p>If any other error occurs, it returns an error. When an error occurs, it
+<p>If any other error occurs, it returns an <code>Err(error)</code>. When an error occurs, it
 does not rollback the key-value pairs that were already set. Thus, this batch operation
 does not guarantee atomicity, implying that some key-value pairs could be
 set while others might fail.</p>
@@ -798,7 +807,7 @@ set while others might fail.</p>
 <p>Note that the key-value pairs are not guaranteed to be deleted in the order
 they are provided.</p>
 <p>If any of the keys do not exist in the bucket, it skips the key.</p>
-<p>If any other error occurs, it returns an error. When an error occurs, it
+<p>If any other error occurs, it returns an <code>Err(error)</code>. When an error occurs, it
 does not rollback the key-value pairs that were already deleted. Thus, this batch operation
 does not guarantee atomicity, implying that some key-value pairs could be
 deleted while others might fail.</p>
@@ -806,7 +815,7 @@ deleted while others might fail.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="delete_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="delete_many.keys"><a href="#keys"><code>keys</code></a></a>: <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
+<li><a name="delete_many.keys"><a href="#keys"><code>keys</code></a></a>: list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
