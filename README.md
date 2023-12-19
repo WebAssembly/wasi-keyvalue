@@ -14,9 +14,12 @@ Phase 1
 
 ### Portability Criteria
 
-`wasi:keyvalue` must have at least two complete independent implementations demonstrating
-embeddability in a production key-value store context. The implementations must be able to run
-on at least two different operating systems.
+`wasi:keyvalue` must have at least two implementations in terms of relevant mainstream key-value stores in each of the following categories: 
+
+1. Open-source key-value stores like Redis, Memcached, Etcd etc.
+2. Proprietary key-value stores like AWS DynamoDB, Azure CosmosDB, Google Cloud Firestore etc.
+
+The implementations must be able to run on Linux, MacOS, and Windows.
 
 A testsuite that passes on the platforms and implementations mentioned above.
 
