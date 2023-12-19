@@ -27,14 +27,14 @@ interface batch {
 	/// Get the values associated with the keys in the bucket. It returns a list of
 	/// incoming-value that can be consumed to get the value associated with the key.
 	///
-	/// If any of the keys do not exist in the bucket, it returns an None value for
+	/// If any of the keys do not exist in the bucket, it returns a `none` value for
 	/// that key in the list.
 	/// 
 	/// Note that the key-value pairs are guaranteed to be returned in the same order
 	/// 
 	/// MAY show an out-of-date value if there are concurrent writes to the bucket.
 	/// 
-	/// If any other error occurs, it returns an error.
+	/// If any other error occurs, it returns an `Err(error)`.
 	get-many: func(bucket: borrow<bucket>, keys: keys) -> result<list<option<incoming-value>>, error>;
 
 	/// Get all the keys in the bucket. It returns a list of keys.
@@ -45,7 +45,7 @@ interface batch {
 	/// 
 	/// MAY show an out-of-date list of keys if there are concurrent writes to the bucket.
 	/// 
-	/// If any error occurs, it returns an error.
+	/// If any error occurs, it returns an `Err(error)`.
 	get-keys: func(bucket: borrow<bucket>) -> result<keys, error>;
 
 	/// Set the values associated with the keys in the bucket. If the key already
@@ -56,7 +56,7 @@ interface batch {
 	///
 	/// If any of the keys do not exist in the bucket, it creates a new key-value pair.
 	/// 
-	/// If any other error occurs, it returns an error. When an error occurs, it
+	/// If any other error occurs, it returns an `Err(error)`. When an error occurs, it
 	/// does not rollback the key-value pairs that were already set. Thus, this batch operation 
 	/// does not guarantee atomicity, implying that some key-value pairs could be 
 	/// set while others might fail. 
@@ -71,7 +71,7 @@ interface batch {
 	/// 
 	/// If any of the keys do not exist in the bucket, it skips the key.
 	/// 
-	/// If any other error occurs, it returns an error. When an error occurs, it
+	/// If any other error occurs, it returns an `Err(error)`. When an error occurs, it
 	/// does not rollback the key-value pairs that were already deleted. Thus, this batch operation
 	/// does not guarantee atomicity, implying that some key-value pairs could be
 	/// deleted while others might fail.

@@ -6,10 +6,10 @@ interface readwrite {
 	/// Get the value associated with the key in the bucket.
 	/// 
 	/// The value is returned as an option. If the key-value pair exists in the
-	/// bucket, it returns ok with the value. If the key does not exist in the
-	/// bucket, it returns ok with none. 
+	/// bucket, it returns `Ok(value)`. If the key does not exist in the
+	/// bucket, it returns `Ok(none)`. 
 	///
-	/// If any other error occurs, it returns an error.
+	/// If any other error occurs, it returns an `Err(error)`.
 	get: func(bucket: borrow<bucket>, key: key) -> result<option<incoming-value>, error>;
 
 	/// Set the value associated with the key in the bucket. If the key already
@@ -17,21 +17,21 @@ interface readwrite {
 	///
 	/// If the key does not exist in the bucket, it creates a new key-value pair.
 	/// 
-	/// If any other error occurs, it returns an error.
+	/// If any other error occurs, it returns an `Err(error)`.
 	set: func(bucket: borrow<bucket>, key: key, outgoing-value: borrow<outgoing-value>) -> result<_, error>;
 
 	/// Delete the key-value pair associated with the key in the bucket.
 	/// 
 	/// If the key does not exist in the bucket, it does nothing.
 	///
-	/// If any other error occurs, it returns an error.
+	/// If any other error occurs, it returns an `Err(error)`.
 	delete: func(bucket: borrow<bucket>, key: key) -> result<_, error>;
 
 	/// Check if the key exists in the bucket.
 	/// 
-	/// If the key exists in the bucket, it returns ok with true. If the key does
-	/// not exist in the bucket, it returns ok with false.
+	/// If the key exists in the bucket, it returns `Ok(true)`. If the key does
+	/// not exist in the bucket, it returns `Ok(false)`.
 	/// 
-	/// If any other error occurs, it returns an error.
+	/// If any other error occurs, it returns an `Err(error)`.
 	exists: func(bucket: borrow<bucket>, key: key) -> result<bool, error>;
 }
