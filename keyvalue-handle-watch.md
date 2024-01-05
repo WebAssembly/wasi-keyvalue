@@ -422,27 +422,20 @@ is ready for reading, before performing the <code>splice</code>.</p>
 <h2><a name="wasi:keyvalue_wasi_cloud_error">Import interface wasi:keyvalue/wasi-cloud-error</a></h2>
 <hr />
 <h3>Types</h3>
-<h4><a name="error"><code>type error</code></a></h4>
-<p><code>u32</code></p>
-<p>An error resource type for keyvalue operations.
+<h4><a name="error"><code>resource error</code></a></h4>
+<h2>An error resource type for keyvalue operations.
 Currently, this provides only one function to return a string representation
 of the error. In the future, this will be extended to provide more information
-about the error.
-<hr />
+about the error.</h2>
 <h3>Functions</h3>
-<h4><a name="drop_error"><code>drop-error: func</code></a></h4>
+<h4><a name="method_error.trace"><code>[method]error.trace: func</code></a></h4>
 <h5>Params</h5>
 <ul>
-<li><a name="drop_error.error"><a href="#error"><code>error</code></a></a>: <a href="#error"><a href="#error"><code>error</code></a></a></li>
-</ul>
-<h4><a name="trace"><code>trace: func</code></a></h4>
-<h5>Params</h5>
-<ul>
-<li><a name="trace.error"><a href="#error"><code>error</code></a></a>: <a href="#error"><a href="#error"><code>error</code></a></a></li>
+<li><a name="method_error.trace.self"><code>self</code></a>: borrow&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="trace.0"></a> <code>string</code></li>
+<li><a name="method_error.trace.0"></a> <code>string</code></li>
 </ul>
 <h2><a name="wasi:keyvalue_types">Import interface wasi:keyvalue/types</a></h2>
 <hr />
@@ -456,11 +449,10 @@ about the error.
 #### <a name="error">`type error`</a>
 [`error`](#error)
 <p>
-#### <a name="bucket">`type bucket`</a>
-`u32`
+#### <a name="bucket">`resource bucket`</a>
 <p>A bucket is a collection of key-value pairs. Each key-value pair is stored
 as a entry in the bucket, and the bucket itself acts as a collection of all
-these entries.
+these entries.</p>
 <p>It is worth noting that the exact terminology for bucket in key-value stores
 can very depending on the specific implementation. For example,</p>
 <ol>
@@ -480,26 +472,24 @@ retrieve the value from the bucket.
 <h4><a name="keys"><code>type keys</code></a></h4>
 <p><a href="#keys"><a href="#keys"><code>keys</code></a></a></p>
 <p>A list of keys
-<h4><a name="outgoing_value"><code>type outgoing-value</code></a></h4>
-<p><code>u32</code></p>
+<h4><a name="outgoing_value"><code>resource outgoing-value</code></a></h4>
 <p>A value is the data stored in a key-value pair. The value can be of any type
 that can be represented in a byte array. It provides a way to write the value
-to the output-stream defined in the `wasi-io` interface.
+to the output-stream defined in the <code>wasi-io</code> interface.</p>
 <h4><a name="outgoing_value_body_async"><code>type outgoing-value-body-async</code></a></h4>
 <p><a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a></p>
 <p>
 #### <a name="outgoing_value_body_sync">`type outgoing-value-body-sync`</a>
 [`outgoing-value-body-sync`](#outgoing_value_body_sync)
 <p>
-#### <a name="incoming_value">`type incoming-value`</a>
-`u32`
+#### <a name="incoming_value">`resource incoming-value`</a>
 <p>A incoming-value is a wrapper around a value. It provides a way to read the value
-from the input-stream defined in the `wasi-io` interface.
+from the input-stream defined in the <code>wasi-io</code> interface.</p>
 <p>The incoming-value provides two ways to consume the value:</p>
 <ol>
-<li><a href="#incoming_value_consume_sync"><code>incoming-value-consume-sync</code></a> consumes the value synchronously and returns the
+<li><code>incoming-value-consume-sync</code> consumes the value synchronously and returns the
 value as a list of bytes.</li>
-<li><a href="#incoming_value_consume_async"><code>incoming-value-consume-async</code></a> consumes the value asynchronously and returns the
+<li><code>incoming-value-consume-async</code> consumes the value asynchronously and returns the
 value as an input-stream.</li>
 </ol>
 <h4><a name="incoming_value_async_body"><code>type incoming-value-async-body</code></a></h4>
@@ -510,80 +500,65 @@ value as an input-stream.</li>
 <p>
 ----
 <h3>Functions</h3>
-<h4><a name="drop_bucket"><code>drop-bucket: func</code></a></h4>
+<h4><a name="static_bucket.open_bucket"><code>[static]bucket.open-bucket: func</code></a></h4>
 <h5>Params</h5>
 <ul>
-<li><a name="drop_bucket.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
-</ul>
-<h4><a name="open_bucket"><code>open-bucket: func</code></a></h4>
-<h5>Params</h5>
-<ul>
-<li><a name="open_bucket.name"><code>name</code></a>: <code>string</code></li>
+<li><a name="static_bucket.open_bucket.name"><code>name</code></a>: <code>string</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="open_bucket.0"></a> result&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="static_bucket.open_bucket.0"></a> result&lt;own&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="drop_outgoing_value"><code>drop-outgoing-value: func</code></a></h4>
-<h5>Params</h5>
-<ul>
-<li><a name="drop_outgoing_value.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
-</ul>
-<h4><a name="new_outgoing_value"><code>new-outgoing-value: func</code></a></h4>
+<h4><a name="static_outgoing_value.new_outgoing_value"><code>[static]outgoing-value.new-outgoing-value: func</code></a></h4>
 <h5>Return values</h5>
 <ul>
-<li><a name="new_outgoing_value.0"></a> <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
+<li><a name="static_outgoing_value.new_outgoing_value.0"></a> own&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
 </ul>
-<h4><a name="outgoing_value_write_body_async"><code>outgoing-value-write-body-async: func</code></a></h4>
+<h4><a name="method_outgoing_value.outgoing_value_write_body_async"><code>[method]outgoing-value.outgoing-value-write-body-async: func</code></a></h4>
 <h5>Params</h5>
 <ul>
-<li><a name="outgoing_value_write_body_async.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
+<li><a name="method_outgoing_value.outgoing_value_write_body_async.self"><code>self</code></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="outgoing_value_write_body_async.0"></a> result&lt;own&lt;<a href="#outgoing_value_body_async"><a href="#outgoing_value_body_async"><code>outgoing-value-body-async</code></a></a>&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="method_outgoing_value.outgoing_value_write_body_async.0"></a> result&lt;own&lt;<a href="#outgoing_value_body_async"><a href="#outgoing_value_body_async"><code>outgoing-value-body-async</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="outgoing_value_write_body_sync"><code>outgoing-value-write-body-sync: func</code></a></h4>
+<h4><a name="method_outgoing_value.outgoing_value_write_body_sync"><code>[method]outgoing-value.outgoing-value-write-body-sync: func</code></a></h4>
 <h5>Params</h5>
 <ul>
-<li><a name="outgoing_value_write_body_sync.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
-<li><a name="outgoing_value_write_body_sync.value"><code>value</code></a>: <a href="#outgoing_value_body_sync"><a href="#outgoing_value_body_sync"><code>outgoing-value-body-sync</code></a></a></li>
+<li><a name="method_outgoing_value.outgoing_value_write_body_sync.self"><code>self</code></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
+<li><a name="method_outgoing_value.outgoing_value_write_body_sync.value"><code>value</code></a>: <a href="#outgoing_value_body_sync"><a href="#outgoing_value_body_sync"><code>outgoing-value-body-sync</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="outgoing_value_write_body_sync.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="method_outgoing_value.outgoing_value_write_body_sync.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="drop_incoming_value"><code>drop-incoming-value: func</code></a></h4>
+<h4><a name="method_incoming_value.incoming_value_consume_sync"><code>[method]incoming-value.incoming-value-consume-sync: func</code></a></h4>
 <h5>Params</h5>
 <ul>
-<li><a name="drop_incoming_value.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
-</ul>
-<h4><a name="incoming_value_consume_sync"><code>incoming-value-consume-sync: func</code></a></h4>
-<h5>Params</h5>
-<ul>
-<li><a name="incoming_value_consume_sync.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
+<li><a name="method_incoming_value.incoming_value_consume_sync.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="incoming_value_consume_sync.0"></a> result&lt;<a href="#incoming_value_sync_body"><a href="#incoming_value_sync_body"><code>incoming-value-sync-body</code></a></a>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="method_incoming_value.incoming_value_consume_sync.0"></a> result&lt;<a href="#incoming_value_sync_body"><a href="#incoming_value_sync_body"><code>incoming-value-sync-body</code></a></a>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="incoming_value_consume_async"><code>incoming-value-consume-async: func</code></a></h4>
+<h4><a name="method_incoming_value.incoming_value_consume_async"><code>[method]incoming-value.incoming-value-consume-async: func</code></a></h4>
 <h5>Params</h5>
 <ul>
-<li><a name="incoming_value_consume_async.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
+<li><a name="method_incoming_value.incoming_value_consume_async.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="incoming_value_consume_async.0"></a> result&lt;own&lt;<a href="#incoming_value_async_body"><a href="#incoming_value_async_body"><code>incoming-value-async-body</code></a></a>&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="method_incoming_value.incoming_value_consume_async.0"></a> result&lt;own&lt;<a href="#incoming_value_async_body"><a href="#incoming_value_async_body"><code>incoming-value-async-body</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="size"><code>size: func</code></a></h4>
+<h4><a name="method_incoming_value.size"><code>[method]incoming-value.size: func</code></a></h4>
 <h5>Params</h5>
 <ul>
-<li><a name="size.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
+<li><a name="method_incoming_value.size.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="size.0"></a> <code>u64</code></li>
+<li><a name="method_incoming_value.size.0"></a> <code>u64</code></li>
 </ul>
 <h2><a name="wasi:keyvalue_readwrite">Import interface wasi:keyvalue/readwrite</a></h2>
 <p>A keyvalue interface that provides simple read and write operations.</p>
@@ -612,12 +587,12 @@ that can be consumed to get the value.</p>
 <p>If the key does not exist in the bucket, it returns an error.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="get.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="get.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="get.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="get.0"></a> result&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="get.0"></a> result&lt;own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="set"><code>set: func</code></a></h4>
 <p>Set the value associated with the key in the bucket. If the key already
@@ -626,36 +601,36 @@ exists in the bucket, it overwrites the value.</p>
 If any other error occurs, it returns an error.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="set.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="set.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="set.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
-<li><a name="set.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a></li>
+<li><a name="set.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="set.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="set.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="delete"><code>delete: func</code></a></h4>
 <p>Delete the key-value pair associated with the key in the bucket.</p>
 <p>If the key does not exist in the bucket, it returns an error.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="delete.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="delete.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="delete.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="delete.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="delete.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="exists"><code>exists: func</code></a></h4>
 <p>Check if the key exists in the bucket.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="exists.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="exists.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="exists.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="exists.0"></a> result&lt;<code>bool</code>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="exists.0"></a> result&lt;<code>bool</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h2><a name="wasi:keyvalue_atomic">Import interface wasi:keyvalue/atomic</a></h2>
 <p>A keyvalue interface that provides atomic operations.</p>
@@ -680,13 +655,13 @@ with the value set to the given delta.</p>
 <p>If any other error occurs, it returns an error.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="increment.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="increment.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="increment.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
 <li><a name="increment.delta"><code>delta</code></a>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="increment.0"></a> result&lt;<code>u64</code>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="increment.0"></a> result&lt;<code>u64</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="compare_and_swap"><code>compare-and-swap: func</code></a></h4>
 <p>Atomically compare and swap the value associated with the key in the bucket.
@@ -694,14 +669,14 @@ It returns a boolean indicating if the swap was successful.</p>
 <p>If the key does not exist in the bucket, it returns an error.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="compare_and_swap.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="compare_and_swap.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="compare_and_swap.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
 <li><a name="compare_and_swap.old"><code>old</code></a>: <code>u64</code></li>
 <li><a name="compare_and_swap.new"><code>new</code></a>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="compare_and_swap.0"></a> result&lt;<code>bool</code>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="compare_and_swap.0"></a> result&lt;<code>bool</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h2><a name="wasi:keyvalue_batch">Import interface wasi:keyvalue/batch</a></h2>
 <p>A keyvalue interface that provides batch operations.</p>
@@ -733,18 +708,18 @@ incoming-values that can be consumed to get the values.</p>
 <p>If any of the keys do not exist in the bucket, it returns an error.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="get_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="get_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="get_many.keys"><a href="#keys"><code>keys</code></a></a>: <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="get_many.0"></a> result&lt;list&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="get_many.0"></a> result&lt;list&lt;own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="get_keys"><code>get-keys: func</code></a></h4>
 <p>Get all the keys in the bucket. It returns a list of keys.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="get_keys.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="get_keys.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
@@ -757,12 +732,12 @@ exists in the bucket, it overwrites the value.</p>
 If any other error occurs, it returns an error.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="set_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
-<li><a name="set_many.key_values"><code>key-values</code></a>: list&lt;(<a href="#key"><a href="#key"><code>key</code></a></a>, <a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>)&gt;</li>
+<li><a name="set_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="set_many.key_values"><code>key-values</code></a>: list&lt;(<a href="#key"><a href="#key"><code>key</code></a></a>, borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;)&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="set_many.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="set_many.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="delete_many"><code>delete-many: func</code></a></h4>
 <p>Delete the key-value pairs associated with the keys in the bucket.</p>
@@ -770,12 +745,12 @@ If any other error occurs, it returns an error.</p>
 If any other error occurs, it returns an error.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="delete_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="delete_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="delete_many.keys"><a href="#keys"><code>keys</code></a></a>: <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="delete_many.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="delete_many.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h2><a name="wasi:keyvalue_handle_watch">Export interface wasi:keyvalue/handle-watch</a></h2>
 <hr />
@@ -796,14 +771,14 @@ If any other error occurs, it returns an error.</p>
 It returns a incoming-value that can be consumed to get the value.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="on_set.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="on_set.bucket"><a href="#bucket"><code>bucket</code></a></a>: own&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="on_set.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
-<li><a name="on_set.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: <a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a></li>
+<li><a name="on_set.incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h4><a name="on_delete"><code>on-delete: func</code></a></h4>
 <p>Handle the delete event for the given bucket and key.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="on_delete.bucket"><a href="#bucket"><code>bucket</code></a></a>: <a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></li>
+<li><a name="on_delete.bucket"><a href="#bucket"><code>bucket</code></a></a>: own&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="on_delete.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
 </ul>
