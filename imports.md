@@ -1,5 +1,5 @@
-<h1><a name="keyvalue">World keyvalue</a></h1>
-<p>The <code>wasi:keyvalue/keyvalue</code> world provides common APIs for interacting
+<h1><a name="imports">World imports</a></h1>
+<p>The <code>wasi:keyvalue/imports</code> world provides common APIs for interacting
 with key-value stores. Components targeting this world will be able to
 do</p>
 <ol>
