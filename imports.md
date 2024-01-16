@@ -439,7 +439,8 @@ or does not have the required permissions to perform the operation.</li>
 </ul>
 <h2>Currently, this provides only one function to return a string representation
 of the error. In the future, this will be extended to provide more information
-about the error.</h2>
+about the error.
+Soon: switch to <code>resource error { ... }</code></h2>
 <h3>Functions</h3>
 <h4><a name="method_error.trace"><code>[method]error.trace: func</code></a></h4>
 <h5>Params</h5>
@@ -451,6 +452,7 @@ about the error.</h2>
 <li><a name="method_error.trace.0"></a> <code>string</code></li>
 </ul>
 <h2><a name="wasi:keyvalue_types">Import interface wasi:keyvalue/types</a></h2>
+<p>A generic keyvalue interface for WASI.</p>
 <hr />
 <h3>Types</h3>
 <h4><a name="input_stream"><code>type input-stream</code></a></h4>
@@ -477,7 +479,8 @@ can very depending on the specific implementation. For example,</p>
 <li>Memcached calls a collection of key-value pairs a slab</li>
 <li>Azure Cosmos DB calls a collection of key-value pairs a container</li>
 </ol>
-<p>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a collection of key-value</p>
+<p>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a collection of key-value
+Soon: switch to <code>resource bucket { ... }</code></p>
 <h4><a name="key"><code>type key</code></a></h4>
 <p><code>string</code></p>
 <p>A key is a unique identifier for a value in a bucket. The key is used to
@@ -485,7 +488,8 @@ retrieve the value from the bucket.
 <h4><a name="outgoing_value"><code>resource outgoing-value</code></a></h4>
 <p>A value is the data stored in a key-value pair. The value can be of any type
 that can be represented in a byte array. It provides a way to write the value
-to the output-stream defined in the <code>wasi-io</code> interface.</p>
+to the output-stream defined in the <code>wasi-io</code> interface.
+Soon: switch to <code>resource value { ... }</code></p>
 <h4><a name="outgoing_value_body_async"><code>type outgoing-value-body-async</code></a></h4>
 <p><a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a></p>
 <p>
@@ -503,7 +507,8 @@ value as a <code>list&lt;u8&gt;</code>.</li>
 value as an <a href="#input_stream"><code>input-stream</code></a>.
 In addition, it provides a <code>incoming-value-size</code> function to get the size of the value.
 This is useful when the value is large and the caller wants to allocate a buffer of
-the right size to consume the value.</li>
+the right size to consume the value.
+Soon: switch to <code>resource incoming-value { ... }</code></li>
 </ol>
 <h4><a name="incoming_value_async_body"><code>type incoming-value-async-body</code></a></h4>
 <p><a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a></p>
