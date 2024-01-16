@@ -1,6 +1,6 @@
-/// A keyvalue interface that provides simple read and write operations.
+/// A keyvalue interface that provides eventually consistent CRUD operations.
 /// 
-/// A read/write operation is an operation that acts on a single key-value pair.
+/// A CRUD operation is an operation that acts on a single key-value pair.
 /// 
 /// The value in the key-value pair is defined as a `u8` byte array and the intention
 /// is that it is the common denominator for all data types defined by different
@@ -18,7 +18,7 @@
 /// read operations will eventually return the value that was written. In other words,
 /// if we pause the updates to the system, the system eventually will return 
 /// the last updated value for read.
-interface readwrite {
+interface eventual {
 	/// A keyvalue interface that provides simple read and write operations.
 	use types.{bucket, error, incoming-value, key, outgoing-value};
 	

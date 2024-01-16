@@ -15,9 +15,9 @@ do</p>
 <li>interface <a href="#wasi:io_streams_0.2.0_rc_2023_11_10"><code>wasi:io/streams@0.2.0-rc-2023-11-10</code></a></li>
 <li>interface <a href="#wasi:keyvalue_wasi_keyvalue_error"><code>wasi:keyvalue/wasi-keyvalue-error</code></a></li>
 <li>interface <a href="#wasi:keyvalue_types"><code>wasi:keyvalue/types</code></a></li>
-<li>interface <a href="#wasi:keyvalue_readwrite"><code>wasi:keyvalue/readwrite</code></a></li>
+<li>interface <a href="#wasi:keyvalue_eventual"><code>wasi:keyvalue/eventual</code></a></li>
 <li>interface <a href="#wasi:keyvalue_atomic"><code>wasi:keyvalue/atomic</code></a></li>
-<li>interface <a href="#wasi:keyvalue_batch"><code>wasi:keyvalue/batch</code></a></li>
+<li>interface <a href="#wasi:keyvalue_eventual_batch"><code>wasi:keyvalue/eventual-batch</code></a></li>
 </ul>
 </li>
 </ul>
@@ -585,9 +585,9 @@ If the size is unknown or unavailable, this function returns an <code>Err(error)
 <ul>
 <li><a name="method_incoming_value.incoming_value_size.0"></a> result&lt;<code>u64</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_readwrite">Import interface wasi:keyvalue/readwrite</a></h2>
-<p>A keyvalue interface that provides simple read and write operations.</p>
-<p>A read/write operation is an operation that acts on a single key-value pair.</p>
+<h2><a name="wasi:keyvalue_eventual">Import interface wasi:keyvalue/eventual</a></h2>
+<p>A keyvalue interface that provides eventually consistent CRUD operations.</p>
+<p>A CRUD operation is an operation that acts on a single key-value pair.</p>
 <p>The value in the key-value pair is defined as a <code>u8</code> byte array and the intention
 is that it is the common denominator for all data types defined by different
 key-value stores to handle data, ensuring compatibility between different
@@ -732,8 +732,8 @@ and was replaced with the <code>new</code> value.</p>
 <ul>
 <li><a name="compare_and_swap.0"></a> result&lt;<code>bool</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_batch">Import interface wasi:keyvalue/batch</a></h2>
-<p>A keyvalue interface that provides batch operations.</p>
+<h2><a name="wasi:keyvalue_eventual_batch">Import interface wasi:keyvalue/eventual-batch</a></h2>
+<p>A keyvalue interface that provides eventually consistent batch operations.</p>
 <p>A batch operation is an operation that operates on multiple keys at once.</p>
 <p>Batch operations are useful for reducing network round-trip time. For example,
 if you want to get the values associated with 100 keys, you can either do 100 get

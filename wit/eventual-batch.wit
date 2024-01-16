@@ -1,4 +1,4 @@
-/// A keyvalue interface that provides batch operations.
+/// A keyvalue interface that provides eventually consistent batch operations.
 /// 
 /// A batch operation is an operation that operates on multiple keys at once.
 /// 
@@ -20,7 +20,7 @@
 /// with the readwrite interface. This interface does not guarantee strong consistency, 
 /// meaning that if a write operation completes, subsequent read operations may not return
 /// the value that was written.
-interface batch {
+interface eventual-batch {
 	/// A keyvalue interface that provides batch get operations.
 	use types.{bucket, error, key, incoming-value, outgoing-value};
 
