@@ -1,15 +1,23 @@
-<h1><a name="keyvalue">World keyvalue</a></h1>
+<h1><a name="imports">World imports</a></h1>
+<p>The <code>wasi:keyvalue/imports</code> world provides common APIs for interacting
+with key-value stores. Components targeting this world will be able to
+do</p>
+<ol>
+<li>CRUD (create, read, update, delete) operations on key-value stores.</li>
+<li>Atomic <a href="#increment"><code>increment</code></a> and CAS (compare-and-swap) operations.</li>
+<li>Batch operations that can reduce the number of round trips to the network.</li>
+</ol>
 <ul>
 <li>Imports:
 <ul>
 <li>interface <a href="#wasi:io_error_0.2.0_rc_2023_11_10"><code>wasi:io/error@0.2.0-rc-2023-11-10</code></a></li>
 <li>interface <a href="#wasi:io_poll_0.2.0_rc_2023_11_10"><code>wasi:io/poll@0.2.0-rc-2023-11-10</code></a></li>
 <li>interface <a href="#wasi:io_streams_0.2.0_rc_2023_11_10"><code>wasi:io/streams@0.2.0-rc-2023-11-10</code></a></li>
-<li>interface <a href="#wasi:keyvalue_wasi_cloud_error"><code>wasi:keyvalue/wasi-cloud-error</code></a></li>
+<li>interface <a href="#wasi:keyvalue_wasi_keyvalue_error"><code>wasi:keyvalue/wasi-keyvalue-error</code></a></li>
 <li>interface <a href="#wasi:keyvalue_types"><code>wasi:keyvalue/types</code></a></li>
-<li>interface <a href="#wasi:keyvalue_readwrite"><code>wasi:keyvalue/readwrite</code></a></li>
+<li>interface <a href="#wasi:keyvalue_eventual"><code>wasi:keyvalue/eventual</code></a></li>
 <li>interface <a href="#wasi:keyvalue_atomic"><code>wasi:keyvalue/atomic</code></a></li>
-<li>interface <a href="#wasi:keyvalue_batch"><code>wasi:keyvalue/batch</code></a></li>
+<li>interface <a href="#wasi:keyvalue_eventual_batch"><code>wasi:keyvalue/eventual-batch</code></a></li>
 </ul>
 </li>
 </ul>
@@ -414,14 +422,25 @@ is ready for reading, before performing the <code>splice</code>.</p>
 <ul>
 <li><a name="method_output_stream.blocking_splice.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_wasi_cloud_error">Import interface wasi:keyvalue/wasi-cloud-error</a></h2>
+<h2><a name="wasi:keyvalue_wasi_keyvalue_error">Import interface wasi:keyvalue/wasi-keyvalue-error</a></h2>
 <hr />
 <h3>Types</h3>
 <h4><a name="error"><code>resource error</code></a></h4>
-<h2>An error resource type for keyvalue operations.
-Currently, this provides only one function to return a string representation
+<p>An error resource type for keyvalue operations.</p>
+<p>Common errors:</p>
+<ul>
+<li>Connectivity errors (e.g. network errors): when the client cannot establish
+a connection to the keyvalue service.</li>
+<li>Authentication and Authorization errors: when the client fails to authenticate
+or does not have the required permissions to perform the operation.</li>
+<li>Data errors: when the client sends incompatible or corrupted data.</li>
+<li>Resource errors: when the system runs out of resources (e.g. memory).</li>
+<li>Internal errors: unexpected errors on the server side.</li>
+</ul>
+<h2>Currently, this provides only one function to return a string representation
 of the error. In the future, this will be extended to provide more information
-about the error.</h2>
+about the error.
+Soon: switch to <code>resource error { ... }</code></h2>
 <h3>Functions</h3>
 <h4><a name="method_error.trace"><code>[method]error.trace: func</code></a></h4>
 <h5>Params</h5>
@@ -433,6 +452,7 @@ about the error.</h2>
 <li><a name="method_error.trace.0"></a> <code>string</code></li>
 </ul>
 <h2><a name="wasi:keyvalue_types">Import interface wasi:keyvalue/types</a></h2>
+<p>A generic keyvalue interface for WASI.</p>
 <hr />
 <h3>Types</h3>
 <h4><a name="input_stream"><code>type input-stream</code></a></h4>
@@ -459,18 +479,17 @@ can very depending on the specific implementation. For example,</p>
 <li>Memcached calls a collection of key-value pairs a slab</li>
 <li>Azure Cosmos DB calls a collection of key-value pairs a container</li>
 </ol>
-<p>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a collection of key-value</p>
+<p>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a collection of key-value
+Soon: switch to <code>resource bucket { ... }</code></p>
 <h4><a name="key"><code>type key</code></a></h4>
 <p><code>string</code></p>
 <p>A key is a unique identifier for a value in a bucket. The key is used to
 retrieve the value from the bucket.
-<h4><a name="keys"><code>type keys</code></a></h4>
-<p><a href="#keys"><a href="#keys"><code>keys</code></a></a></p>
-<p>A list of keys
 <h4><a name="outgoing_value"><code>resource outgoing-value</code></a></h4>
 <p>A value is the data stored in a key-value pair. The value can be of any type
 that can be represented in a byte array. It provides a way to write the value
-to the output-stream defined in the <code>wasi-io</code> interface.</p>
+to the output-stream defined in the <code>wasi-io</code> interface.
+Soon: switch to <code>resource value { ... }</code></p>
 <h4><a name="outgoing_value_body_async"><code>type outgoing-value-body-async</code></a></h4>
 <p><a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a></p>
 <p>
@@ -479,13 +498,17 @@ to the output-stream defined in the <code>wasi-io</code> interface.</p>
 <p>
 #### <a name="incoming_value">`resource incoming-value`</a>
 <p>A incoming-value is a wrapper around a value. It provides a way to read the value
-from the input-stream defined in the <code>wasi-io</code> interface.</p>
+from the <a href="#input_stream"><code>input-stream</code></a> defined in the <code>wasi-io</code> interface.</p>
 <p>The incoming-value provides two ways to consume the value:</p>
 <ol>
 <li><code>incoming-value-consume-sync</code> consumes the value synchronously and returns the
-value as a list of bytes.</li>
+value as a <code>list&lt;u8&gt;</code>.</li>
 <li><code>incoming-value-consume-async</code> consumes the value asynchronously and returns the
-value as an input-stream.</li>
+value as an <a href="#input_stream"><code>input-stream</code></a>.
+In addition, it provides a <code>incoming-value-size</code> function to get the size of the value.
+This is useful when the value is large and the caller wants to allocate a buffer of
+the right size to consume the value.
+Soon: switch to <code>resource incoming-value { ... }</code></li>
 </ol>
 <h4><a name="incoming_value_async_body"><code>type incoming-value-async-body</code></a></h4>
 <p><a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a></p>
@@ -496,6 +519,8 @@ value as an input-stream.</li>
 ----
 <h3>Functions</h3>
 <h4><a name="static_bucket.open_bucket"><code>[static]bucket.open-bucket: func</code></a></h4>
+<p>Opens a bucket with the given name.</p>
+<p>If any error occurs, including if the bucket does not exist, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="static_bucket.open_bucket.name"><code>name</code></a>: <code>string</code></li>
@@ -510,6 +535,8 @@ value as an input-stream.</li>
 <li><a name="static_outgoing_value.new_outgoing_value.0"></a> own&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
 </ul>
 <h4><a name="method_outgoing_value.outgoing_value_write_body_async"><code>[method]outgoing-value.outgoing-value-write-body-async: func</code></a></h4>
+<p>Writes the value to the output-stream asynchronously.
+If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="method_outgoing_value.outgoing_value_write_body_async.self"><code>self</code></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
@@ -519,6 +546,8 @@ value as an input-stream.</li>
 <li><a name="method_outgoing_value.outgoing_value_write_body_async.0"></a> result&lt;own&lt;<a href="#outgoing_value_body_async"><a href="#outgoing_value_body_async"><code>outgoing-value-body-async</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="method_outgoing_value.outgoing_value_write_body_sync"><code>[method]outgoing-value.outgoing-value-write-body-sync: func</code></a></h4>
+<p>Writes the value to the output-stream synchronously.
+If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="method_outgoing_value.outgoing_value_write_body_sync.self"><code>self</code></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
@@ -529,6 +558,8 @@ value as an input-stream.</li>
 <li><a name="method_outgoing_value.outgoing_value_write_body_sync.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="method_incoming_value.incoming_value_consume_sync"><code>[method]incoming-value.incoming-value-consume-sync: func</code></a></h4>
+<p>Consumes the value synchronously and returns the value as a list of bytes.
+If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="method_incoming_value.incoming_value_consume_sync.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
@@ -538,6 +569,8 @@ value as an input-stream.</li>
 <li><a name="method_incoming_value.incoming_value_consume_sync.0"></a> result&lt;<a href="#incoming_value_sync_body"><a href="#incoming_value_sync_body"><code>incoming-value-sync-body</code></a></a>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="method_incoming_value.incoming_value_consume_async"><code>[method]incoming-value.incoming-value-consume-async: func</code></a></h4>
+<p>Consumes the value asynchronously and returns the value as an <a href="#input_stream"><code>input-stream</code></a>.
+If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="method_incoming_value.incoming_value_consume_async.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
@@ -546,17 +579,34 @@ value as an input-stream.</li>
 <ul>
 <li><a name="method_incoming_value.incoming_value_consume_async.0"></a> result&lt;own&lt;<a href="#incoming_value_async_body"><a href="#incoming_value_async_body"><code>incoming-value-async-body</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="method_incoming_value.size"><code>[method]incoming-value.size: func</code></a></h4>
+<h4><a name="method_incoming_value.incoming_value_size"><code>[method]incoming-value.incoming-value-size: func</code></a></h4>
+<p>The size of the value in bytes.
+If the size is unknown or unavailable, this function returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_incoming_value.size.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
+<li><a name="method_incoming_value.incoming_value_size.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="method_incoming_value.size.0"></a> <code>u64</code></li>
+<li><a name="method_incoming_value.incoming_value_size.0"></a> result&lt;<code>u64</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_readwrite">Import interface wasi:keyvalue/readwrite</a></h2>
-<p>A keyvalue interface that provides simple read and write operations.</p>
+<h2><a name="wasi:keyvalue_eventual">Import interface wasi:keyvalue/eventual</a></h2>
+<p>A keyvalue interface that provides eventually consistent CRUD operations.</p>
+<p>A CRUD operation is an operation that acts on a single key-value pair.</p>
+<p>The value in the key-value pair is defined as a <code>u8</code> byte array and the intention
+is that it is the common denominator for all data types defined by different
+key-value stores to handle data, ensuring compatibility between different
+key-value stores. Note: the clients will be expecting serialization/deserialization overhead
+to be handled by the key-value store. The value could be a serialized object from
+JSON, HTML or vendor-specific data types like AWS S3 objects.</p>
+<p>Data consistency in a key value store refers to the gaurantee that once a
+write operation completes, all subsequent read operations will return the
+value that was written.</p>
+<p>The level of consistency in readwrite interfaces is <strong>eventual consistency</strong>,
+which means that if a write operation completes successfully, all subsequent
+read operations will eventually return the value that was written. In other words,
+if we pause the updates to the system, the system eventually will return
+the last updated value for read.</p>
 <hr />
 <h3>Types</h3>
 <h4><a name="bucket"><code>type bucket</code></a></h4>
@@ -577,9 +627,11 @@ value as an input-stream.</li>
 ----
 <h3>Functions</h3>
 <h4><a name="get"><code>get: func</code></a></h4>
-<p>Get the value associated with the key in the bucket. It returns a incoming-value
-that can be consumed to get the value.</p>
-<p>If the key does not exist in the bucket, it returns an error.</p>
+<p>Get the value associated with the key in the bucket.</p>
+<p>The value is returned as an option. If the key-value pair exists in the
+bucket, it returns <code>Ok(value)</code>. If the key does not exist in the
+bucket, it returns <code>Ok(none)</code>.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="get.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -587,13 +639,13 @@ that can be consumed to get the value.</p>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="get.0"></a> result&lt;own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
+<li><a name="get.0"></a> result&lt;option&lt;own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="set"><code>set: func</code></a></h4>
 <p>Set the value associated with the key in the bucket. If the key already
 exists in the bucket, it overwrites the value.</p>
-<p>If the key does not exist in the bucket, it creates a new key-value pair.
-If any other error occurs, it returns an error.</p>
+<p>If the key does not exist in the bucket, it creates a new key-value pair.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="set.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -606,7 +658,8 @@ If any other error occurs, it returns an error.</p>
 </ul>
 <h4><a name="delete"><code>delete: func</code></a></h4>
 <p>Delete the key-value pair associated with the key in the bucket.</p>
-<p>If the key does not exist in the bucket, it returns an error.</p>
+<p>If the key does not exist in the bucket, it does nothing.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="delete.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -618,6 +671,9 @@ If any other error occurs, it returns an error.</p>
 </ul>
 <h4><a name="exists"><code>exists: func</code></a></h4>
 <p>Check if the key exists in the bucket.</p>
+<p>If the key exists in the bucket, it returns <code>Ok(true)</code>. If the key does
+not exist in the bucket, it returns <code>Ok(false)</code>.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="exists.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -629,6 +685,10 @@ If any other error occurs, it returns an error.</p>
 </ul>
 <h2><a name="wasi:keyvalue_atomic">Import interface wasi:keyvalue/atomic</a></h2>
 <p>A keyvalue interface that provides atomic operations.</p>
+<p>Atomic operations are single, indivisible operations. When a fault causes
+an atomic operation to fail, it will appear to the invoker of the atomic
+operation that the action either completed successfully or did nothing
+at all.</p>
 <hr />
 <h3>Types</h3>
 <h4><a name="bucket"><code>type bucket</code></a></h4>
@@ -647,7 +707,7 @@ If any other error occurs, it returns an error.</p>
 given delta. It returns the new value.</p>
 <p>If the key does not exist in the bucket, it creates a new key-value pair
 with the value set to the given delta.</p>
-<p>If any other error occurs, it returns an error.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="increment.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -659,9 +719,13 @@ with the value set to the given delta.</p>
 <li><a name="increment.0"></a> result&lt;<code>u64</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="compare_and_swap"><code>compare-and-swap: func</code></a></h4>
-<p>Atomically compare and swap the value associated with the key in the bucket.
-It returns a boolean indicating if the swap was successful.</p>
-<p>If the key does not exist in the bucket, it returns an error.</p>
+<p>Compare-and-swap (CAS) atomically updates the value associated with the key
+in the bucket if the value matches the old value. This operation returns
+<code>Ok(true)</code> if the swap was successful, <code>Ok(false)</code> if the value did not match,</p>
+<p>A successful CAS operation means the current value matched the <code>old</code> value
+and was replaced with the <code>new</code> value.</p>
+<p>If the key does not exist in the bucket, it returns <code>Ok(false)</code>.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="compare_and_swap.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -673,8 +737,24 @@ It returns a boolean indicating if the swap was successful.</p>
 <ul>
 <li><a name="compare_and_swap.0"></a> result&lt;<code>bool</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_batch">Import interface wasi:keyvalue/batch</a></h2>
-<p>A keyvalue interface that provides batch operations.</p>
+<h2><a name="wasi:keyvalue_eventual_batch">Import interface wasi:keyvalue/eventual-batch</a></h2>
+<p>A keyvalue interface that provides eventually consistent batch operations.</p>
+<p>A batch operation is an operation that operates on multiple keys at once.</p>
+<p>Batch operations are useful for reducing network round-trip time. For example,
+if you want to get the values associated with 100 keys, you can either do 100 get
+operations or you can do 1 batch get operation. The batch operation is
+faster because it only needs to make 1 network call instead of 100.</p>
+<p>A batch operation does not guarantee atomicity, meaning that if the batch
+operation fails, some of the keys may have been modified and some may not.
+Transactional operations are being worked on and will be added in the future to
+provide atomicity.</p>
+<p>Data consistency in a key value store refers to the gaurantee that once a
+write operation completes, all subsequent read operations will return the
+value that was written.</p>
+<p>The level of consistency in batch operations is <strong>eventual consistency</strong>, the same
+with the readwrite interface. This interface does not guarantee strong consistency,
+meaning that if a write operation completes, subsequent read operations may not return
+the value that was written.</p>
 <hr />
 <h3>Types</h3>
 <h4><a name="bucket"><code>type bucket</code></a></h4>
@@ -686,9 +766,6 @@ It returns a boolean indicating if the swap was successful.</p>
 #### <a name="key">`type key`</a>
 [`key`](#key)
 <p>
-#### <a name="keys">`type keys`</a>
-[`keys`](#keys)
-<p>
 #### <a name="incoming_value">`type incoming-value`</a>
 [`incoming-value`](#incoming_value)
 <p>
@@ -699,32 +776,46 @@ It returns a boolean indicating if the swap was successful.</p>
 <h3>Functions</h3>
 <h4><a name="get_many"><code>get-many: func</code></a></h4>
 <p>Get the values associated with the keys in the bucket. It returns a list of
-incoming-values that can be consumed to get the values.</p>
-<p>If any of the keys do not exist in the bucket, it returns an error.</p>
+incoming-value that can be consumed to get the value associated with the key.</p>
+<p>If any of the keys do not exist in the bucket, it returns a <code>none</code> value for
+that key in the list.</p>
+<p>Note that the key-value pairs are guaranteed to be returned in the same order</p>
+<p>MAY show an out-of-date value if there are concurrent writes to the bucket.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="get_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="get_many.keys"><a href="#keys"><code>keys</code></a></a>: <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
+<li><a name="get_many.keys"><a href="#keys"><code>keys</code></a></a>: list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="get_many.0"></a> result&lt;list&lt;own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
+<li><a name="get_many.0"></a> result&lt;list&lt;option&lt;own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;&gt;&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="get_keys"><code>get-keys: func</code></a></h4>
+<h4><a name="keys"><code>keys: func</code></a></h4>
 <p>Get all the keys in the bucket. It returns a list of keys.</p>
+<p>Note that the keys are not guaranteed to be returned in any particular order.</p>
+<p>If the bucket is empty, it returns an empty list.</p>
+<p>MAY show an out-of-date list of keys if there are concurrent writes to the bucket.</p>
+<p>If any error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="get_keys.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="keys.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="get_keys.0"></a> <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
+<li><a name="keys.0"></a> result&lt;list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="set_many"><code>set-many: func</code></a></h4>
 <p>Set the values associated with the keys in the bucket. If the key already
 exists in the bucket, it overwrites the value.</p>
-<p>If any of the keys do not exist in the bucket, it creates a new key-value pair.
-If any other error occurs, it returns an error.</p>
+<p>Note that the key-value pairs are not guaranteed to be set in the order
+they are provided.</p>
+<p>If any of the keys do not exist in the bucket, it creates a new key-value pair.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>. When an error occurs, it
+does not rollback the key-value pairs that were already set. Thus, this batch operation
+does not guarantee atomicity, implying that some key-value pairs could be
+set while others might fail.</p>
+<p>Other concurrent operations may also be able to see the partial results.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="set_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
@@ -736,12 +827,18 @@ If any other error occurs, it returns an error.</p>
 </ul>
 <h4><a name="delete_many"><code>delete-many: func</code></a></h4>
 <p>Delete the key-value pairs associated with the keys in the bucket.</p>
-<p>If any of the keys do not exist in the bucket, it skips the key.
-If any other error occurs, it returns an error.</p>
+<p>Note that the key-value pairs are not guaranteed to be deleted in the order
+they are provided.</p>
+<p>If any of the keys do not exist in the bucket, it skips the key.</p>
+<p>If any other error occurs, it returns an <code>Err(error)</code>. When an error occurs, it
+does not rollback the key-value pairs that were already deleted. Thus, this batch operation
+does not guarantee atomicity, implying that some key-value pairs could be
+deleted while others might fail.</p>
+<p>Other concurrent operations may also be able to see the partial results.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="delete_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="delete_many.keys"><a href="#keys"><code>keys</code></a></a>: <a href="#keys"><a href="#keys"><code>keys</code></a></a></li>
+<li><a name="delete_many.keys"><a href="#keys"><code>keys</code></a></a>: list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
