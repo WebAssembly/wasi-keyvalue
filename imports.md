@@ -13,11 +13,11 @@ do</p>
 <li>interface <a href="#wasi:io_error_0.2.0_rc_2023_11_10"><code>wasi:io/error@0.2.0-rc-2023-11-10</code></a></li>
 <li>interface <a href="#wasi:io_poll_0.2.0_rc_2023_11_10"><code>wasi:io/poll@0.2.0-rc-2023-11-10</code></a></li>
 <li>interface <a href="#wasi:io_streams_0.2.0_rc_2023_11_10"><code>wasi:io/streams@0.2.0-rc-2023-11-10</code></a></li>
-<li>interface <a href="#wasi:keyvalue_wasi_keyvalue_error"><code>wasi:keyvalue/wasi-keyvalue-error</code></a></li>
-<li>interface <a href="#wasi:keyvalue_types"><code>wasi:keyvalue/types</code></a></li>
-<li>interface <a href="#wasi:keyvalue_eventual"><code>wasi:keyvalue/eventual</code></a></li>
-<li>interface <a href="#wasi:keyvalue_atomic"><code>wasi:keyvalue/atomic</code></a></li>
-<li>interface <a href="#wasi:keyvalue_eventual_batch"><code>wasi:keyvalue/eventual-batch</code></a></li>
+<li>interface <a href="#wasi:keyvalue_wasi_keyvalue_error_0.1.0"><code>wasi:keyvalue/wasi-keyvalue-error@0.1.0</code></a></li>
+<li>interface <a href="#wasi:keyvalue_types_0.1.0"><code>wasi:keyvalue/types@0.1.0</code></a></li>
+<li>interface <a href="#wasi:keyvalue_eventual_0.1.0"><code>wasi:keyvalue/eventual@0.1.0</code></a></li>
+<li>interface <a href="#wasi:keyvalue_atomic_0.1.0"><code>wasi:keyvalue/atomic@0.1.0</code></a></li>
+<li>interface <a href="#wasi:keyvalue_eventual_batch_0.1.0"><code>wasi:keyvalue/eventual-batch@0.1.0</code></a></li>
 </ul>
 </li>
 </ul>
@@ -422,7 +422,7 @@ is ready for reading, before performing the <code>splice</code>.</p>
 <ul>
 <li><a name="method_output_stream.blocking_splice.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_wasi_keyvalue_error">Import interface wasi:keyvalue/wasi-keyvalue-error</a></h2>
+<h2><a name="wasi:keyvalue_wasi_keyvalue_error_0.1.0">Import interface wasi:keyvalue/wasi-keyvalue-error@0.1.0</a></h2>
 <hr />
 <h3>Types</h3>
 <h4><a name="error"><code>resource error</code></a></h4>
@@ -451,7 +451,7 @@ Soon: switch to <code>resource error { ... }</code></h2>
 <ul>
 <li><a name="method_error.trace.0"></a> <code>string</code></li>
 </ul>
-<h2><a name="wasi:keyvalue_types">Import interface wasi:keyvalue/types</a></h2>
+<h2><a name="wasi:keyvalue_types_0.1.0">Import interface wasi:keyvalue/types@0.1.0</a></h2>
 <p>A generic keyvalue interface for WASI.</p>
 <hr />
 <h3>Types</h3>
@@ -590,7 +590,7 @@ If the size is unknown or unavailable, this function returns an <code>Err(error)
 <ul>
 <li><a name="method_incoming_value.incoming_value_size.0"></a> result&lt;<code>u64</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_eventual">Import interface wasi:keyvalue/eventual</a></h2>
+<h2><a name="wasi:keyvalue_eventual_0.1.0">Import interface wasi:keyvalue/eventual@0.1.0</a></h2>
 <p>A keyvalue interface that provides eventually consistent CRUD operations.</p>
 <p>A CRUD operation is an operation that acts on a single key-value pair.</p>
 <p>The value in the key-value pair is defined as a <code>u8</code> byte array and the intention
@@ -683,7 +683,7 @@ not exist in the bucket, it returns <code>Ok(false)</code>.</p>
 <ul>
 <li><a name="exists.0"></a> result&lt;<code>bool</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_atomic">Import interface wasi:keyvalue/atomic</a></h2>
+<h2><a name="wasi:keyvalue_atomic_0.1.0">Import interface wasi:keyvalue/atomic@0.1.0</a></h2>
 <p>A keyvalue interface that provides atomic operations.</p>
 <p>Atomic operations are single, indivisible operations. When a fault causes
 an atomic operation to fail, it will appear to the invoker of the atomic
@@ -737,7 +737,7 @@ and was replaced with the <code>new</code> value.</p>
 <ul>
 <li><a name="compare_and_swap.0"></a> result&lt;<code>bool</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_eventual_batch">Import interface wasi:keyvalue/eventual-batch</a></h2>
+<h2><a name="wasi:keyvalue_eventual_batch_0.1.0">Import interface wasi:keyvalue/eventual-batch@0.1.0</a></h2>
 <p>A keyvalue interface that provides eventually consistent batch operations.</p>
 <p>A batch operation is an operation that operates on multiple keys at once.</p>
 <p>Batch operations are useful for reducing network round-trip time. For example,
