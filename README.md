@@ -46,8 +46,8 @@ A testsuite that passes on the platforms and implementations mentioned above.
 
 ### Introduction
 
-This `wasi:keyvalue` proposal defines a collection of [interfaces] for
-interacting with key-value stores. It additionally defines a [world],
+This `wasi:keyvalue` proposal defines a collection of [interfaces](/wit) for
+interacting with key-value stores. It additionally defines a [world](/wit/world.wit),
 `wasi:keyvalue/keyvalue`, that groups together common interfaces including
 
 1. CRUD operations on single key-value pairs
@@ -77,13 +77,12 @@ A third design goal of `wasi:keyvalue` interfaces is to allow performance optimi
 
 ### API walk-through
 
-The proposal can be understood by first reading the comments of `world.wit`, then `eventual.wit`, `atomic.wit`, `eventual-batch.wit`, `caching.wit` and finally `types.wit`
+The proposal can be understood by first reading the comments of `world.wit`, then `crud.wit`, `atomic.wit`, `batch.wit`, and finally `types.wit`
 
 [`world.wit`](./wit/world.wit)
-[`eventual.wit`](./wit/eventual.wit)
+[`crud.wit`](./wit/crud.wit)
 [`atomic.wit`](./wit/atomic.wit)
-[`eventual-batch.wit`](./wit/eventual-batch.wit)
-[`caching.wit`](./wit/caching.wit)
+[`batch.wit`](./wit/batch.wit)
 [`types.wit`](./wit/types.wit)
 
 ### Working with the WIT
@@ -99,13 +98,6 @@ and can be validated and otherwise manipulated via:
 ```
 wasm-tools component wit wit/ ...
 ```
-
-The `wit/deps` directory contains a live snapshot of the contents of several
-other WASI proposals upon which this proposal depends. It is automatically
-updated by running [`wit-deps update`](https://crates.io/crates/wit-deps-cli)
-in the root directory, which fetches the live contents of the `main` branch of
-each proposal. As things stabilize, `wit/deps.toml` will be updated to refer to
-versioned releases.
 
 ### References & acknowledgements
 

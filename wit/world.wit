@@ -7,20 +7,15 @@ package wasi:keyvalue@0.2.0-draft;
 /// 2. Atomic `increment` and CAS (compare-and-swap) operations.
 /// 3. Batch operations that can reduce the number of round trips to the network.
 world imports {
-	/// The `eventual` capability allows the component to perform 
+	/// The `crud` capability allows the component to perform 
 	/// eventually consistent CRUD operations on the key-value store.
-	import eventual;
+	import crud;
 
 	/// The `atomic` capability allows the component to perform atomic
 	/// `increment` and CAS (compare-and-swap) operations.
 	import atomic;
 
-	/// The `eventual-batch` capability allows the component to perform eventually
+	/// The `batch` capability allows the component to perform eventually
 	/// consistent batch operations that can reduce the number of round trips to the network.
-	import eventual-batch;
-}
-
-world keyvalue-handle-watch {
-	include imports;
-	export handle-watch;
+	import batch;
 }
