@@ -11,6 +11,7 @@ Phase 1
 - Dan Chiarlone
 - David Justice
 - Jiaxiao Zhou
+- Taylor Thomas
 
 ### Portability Criteria
 
