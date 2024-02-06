@@ -1,29 +1,31 @@
 /// A keyvalue interface that provides atomic operations.
 /// 
-/// Atomic operations are single, indivisible operations. When a fault causes
-/// an atomic operation to fail, it will appear to the invoker of the atomic
-/// operation that the action either completed successfully or did nothing
-/// at all.
+/// Atomic operations are single, indivisible operations. When a fault causes an atomic operation to
+/// fail, it will appear to the invoker of the atomic operation that the action either completed
+/// successfully or did nothing at all.
 interface atomic {
   use types.{store, error};
+  
+  /// The atomic resource contains atomic operations that can be executed against a store
   resource atomic {
+	/// Create a new atomic resource, using the given store to access the data
 	open: static func(store: borrow<store>) -> atomic;
 
-	/// Atomically increment the value associated with the key in the store by the 
-	/// given delta. It returns the new value.
+	/// Atomically increment the value associated with the key in the store by the given delta. It
+	/// returns the new value.
 	///
-	/// If the key does not exist in the store, it creates a new key-value pair
-	/// with the value set to the given delta. 
+	/// If the key does not exist in the store, it creates a new key-value pair with the value set
+	/// to the given delta. 
 	///
 	/// If any other error occurs, it returns an `Err(error)`.
 	increment: func(key: string, delta: u64) -> result<u64, error>;
 	
-	/// Compare-and-swap (CAS) atomically updates the value associated with the key
-	/// in the store if the value matches the old value. This operation returns
-	/// `Ok(true)` if the swap was successful, `Ok(false)` if the value did not match,
+	/// Compare-and-swap (CAS) atomically updates the value associated with the key in the store if
+	/// the value matches the old value. This operation returns `Ok(true)` if the swap was
+	/// successful, `Ok(false)` if the value did not match,
 	/// 
-	/// A successful CAS operation means the current value matched the `old` value
-	/// and was replaced with the `new` value.
+	/// A successful CAS operation means the current value matched the `old` value and was replaced
+	/// with the `new` value.
 	///
 	/// If the key does not exist in the store, it returns `Ok(false)`.
 	/// 

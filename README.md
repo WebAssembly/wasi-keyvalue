@@ -107,6 +107,8 @@ This proposal was inspired by Dapr's [State API]
 
 ### Change log
 
+- 2024-02-12:
+  - Simplified interfaces to 3 key pieces of functionality: CRUD, atomic, and batch. Also removed the use of streams to simplify the starting point of the API
 - 2024-01-16:
   - Changed the `readwrite` and `batch` interface names to `eventual` and `eventual-batch`. See more details [here](https://github.com/WebAssembly/wasi-keyvalue/pull/30#discussion_r1442282650).
 - 2023-12-19:

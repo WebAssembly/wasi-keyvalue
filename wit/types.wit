@@ -1,11 +1,11 @@
 // A generic keyvalue interface for WASI.
 interface types {
-	/// A bucket is a collection of key-value pairs. Each key-value pair is stored
-	/// as a entry in the bucket, and the bucket itself acts as a collection of all
-	/// these entries.
+	/// A bucket is a collection of key-value pairs. Each key-value pair is stored as a entry in the
+	/// bucket, and the bucket itself acts as a collection of all these entries.
 	///
-	/// It is worth noting that the exact terminology for bucket in key-value stores
-	/// can very depending on the specific implementation. For example,
+	/// It is worth noting that the exact terminology for bucket in key-value stores can very
+	/// depending on the specific implementation. For example:
+	///
 	/// 1. Amazon DynamoDB calls a collection of key-value pairs a table
 	/// 2. Redis has hashes, sets, and sorted sets as different types of collections
 	/// 3. Cassandra calls a collection of key-value pairs a column family
@@ -14,15 +14,14 @@ interface types {
 	/// 6. Memcached calls a collection of key-value pairs a slab
 	/// 7. Azure Cosmos DB calls a collection of key-value pairs a container
 	///
-	/// In this interface, we use the term `bucket` to refer to a collection of key-value
-	// Soon: switch to `resource bucket { ... }`
+	/// In this interface, we use the term `bucket` to refer to a collection of key-value pairs
 	resource store {
-		/// Open the store with the specified identifier.
+		/// Get the store with the specified identifier.
 		///
 		/// `identifier` must refer to a store provided by the host.
 		///
 		/// `error::no-such-store` will be raised if the `identifier` is not recognized.
-		open: static func(identifier: string) -> result<store, error>;
+		get: static func(identifier: string) -> result<store, error>;
 	}
 
 	/// The set of errors which may be raised by functions in this interface
