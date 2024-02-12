@@ -563,27 +563,27 @@ If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <ul>
 <li><a name="method_outgoing_value.outgoing_value_write_body_sync.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="method_incoming_value.incoming_value_consume_sync"><code>[method]incoming-value.incoming-value-consume-sync: func</code></a></h4>
+<h4><a name="static_incoming_value.incoming_value_consume_sync"><code>[static]incoming-value.incoming-value-consume-sync: func</code></a></h4>
 <p>Consumes the value synchronously and returns the value as a list of bytes.
 If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_incoming_value.incoming_value_consume_sync.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
+<li><a name="static_incoming_value.incoming_value_consume_sync.this"><code>this</code></a>: own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="method_incoming_value.incoming_value_consume_sync.0"></a> result&lt;<a href="#incoming_value_sync_body"><a href="#incoming_value_sync_body"><code>incoming-value-sync-body</code></a></a>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
+<li><a name="static_incoming_value.incoming_value_consume_sync.0"></a> result&lt;<a href="#incoming_value_sync_body"><a href="#incoming_value_sync_body"><code>incoming-value-sync-body</code></a></a>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="method_incoming_value.incoming_value_consume_async"><code>[method]incoming-value.incoming-value-consume-async: func</code></a></h4>
+<h4><a name="static_incoming_value.incoming_value_consume_async"><code>[static]incoming-value.incoming-value-consume-async: func</code></a></h4>
 <p>Consumes the value asynchronously and returns the value as an <a href="#input_stream"><code>input-stream</code></a>.
 If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_incoming_value.incoming_value_consume_async.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
+<li><a name="static_incoming_value.incoming_value_consume_async.this"><code>this</code></a>: own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="method_incoming_value.incoming_value_consume_async.0"></a> result&lt;own&lt;<a href="#incoming_value_async_body"><a href="#incoming_value_async_body"><code>incoming-value-async-body</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
+<li><a name="static_incoming_value.incoming_value_consume_async.0"></a> result&lt;own&lt;<a href="#incoming_value_async_body"><a href="#incoming_value_async_body"><code>incoming-value-async-body</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
 <h4><a name="method_incoming_value.incoming_value_size"><code>[method]incoming-value.incoming-value-size: func</code></a></h4>
 <p>The size of the value in bytes.
