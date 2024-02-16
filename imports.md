@@ -13,18 +13,18 @@ do</p>
 <li>interface <a href="#wasi:io_error_0.2.0"><code>wasi:io/error@0.2.0</code></a></li>
 <li>interface <a href="#wasi:io_poll_0.2.0"><code>wasi:io/poll@0.2.0</code></a></li>
 <li>interface <a href="#wasi:io_streams_0.2.0"><code>wasi:io/streams@0.2.0</code></a></li>
-<li>interface <a href="#wasi:keyvalue_wasi_keyvalue_error_0.1.0"><code>wasi:keyvalue/wasi-keyvalue-error@0.1.0</code></a></li>
-<li>interface <a href="#wasi:keyvalue_types_0.1.0"><code>wasi:keyvalue/types@0.1.0</code></a></li>
-<li>interface <a href="#wasi:keyvalue_eventual_0.1.0"><code>wasi:keyvalue/eventual@0.1.0</code></a></li>
-<li>interface <a href="#wasi:keyvalue_atomic_0.1.0"><code>wasi:keyvalue/atomic@0.1.0</code></a></li>
-<li>interface <a href="#wasi:keyvalue_eventual_batch_0.1.0"><code>wasi:keyvalue/eventual-batch@0.1.0</code></a></li>
+<li>interface <a href="#wasi:keyvalue_wasi_keyvalue_error_0.2.0_draft"><code>wasi:keyvalue/wasi-keyvalue-error@0.2.0-draft</code></a></li>
+<li>interface <a href="#wasi:keyvalue_types_0.2.0_draft"><code>wasi:keyvalue/types@0.2.0-draft</code></a></li>
+<li>interface <a href="#wasi:keyvalue_eventual_0.2.0_draft"><code>wasi:keyvalue/eventual@0.2.0-draft</code></a></li>
+<li>interface <a href="#wasi:keyvalue_atomic_0.2.0_draft"><code>wasi:keyvalue/atomic@0.2.0-draft</code></a></li>
+<li>interface <a href="#wasi:keyvalue_eventual_batch_0.2.0_draft"><code>wasi:keyvalue/eventual-batch@0.2.0-draft</code></a></li>
 </ul>
 </li>
 </ul>
-<h2><a name="wasi:io_error_0.2.0">Import interface wasi:io/error@0.2.0</a></h2>
+<h2><a name="wasi:io_error_0.2.0"></a>Import interface wasi:io/error@0.2.0</h2>
 <hr />
 <h3>Types</h3>
-<h4><a name="error"><code>resource error</code></a></h4>
+<h4><a name="error"></a><code>resource error</code></h4>
 <p>A resource which represents some error information.</p>
 <p>The only method provided by this resource is <code>to-debug-string</code>,
 which provides some human-readable information about the error.</p>
@@ -41,7 +41,7 @@ error-code type, using the function
 <h2>The set of functions which can &quot;downcast&quot; an <a href="#error"><code>error</code></a> into a more
 concrete type is open.</h2>
 <h3>Functions</h3>
-<h4><a name="method_error.to_debug_string"><code>[method]error.to-debug-string: func</code></a></h4>
+<h4><a name="method_error.to_debug_string"></a><code>[method]error.to-debug-string: func</code></h4>
 <p>Returns a string that is suitable to assist humans in debugging
 this error.</p>
 <p>WARNING: The returned string should not be consumed mechanically!
@@ -50,41 +50,41 @@ details. Parsing this string is a major platform-compatibility
 hazard.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_error.to_debug_string.self"><code>self</code></a>: borrow&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="method_error.to_debug_string.self"></a><code>self</code>: borrow&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_error.to_debug_string.0"></a> <code>string</code></li>
 </ul>
-<h2><a name="wasi:io_poll_0.2.0">Import interface wasi:io/poll@0.2.0</a></h2>
+<h2><a name="wasi:io_poll_0.2.0"></a>Import interface wasi:io/poll@0.2.0</h2>
 <p>A poll API intended to let users wait for I/O events on multiple handles
 at once.</p>
 <hr />
 <h3>Types</h3>
-<h4><a name="pollable"><code>resource pollable</code></a></h4>
+<h4><a name="pollable"></a><code>resource pollable</code></h4>
 <h2><a href="#pollable"><code>pollable</code></a> represents a single I/O event which may be ready, or not.</h2>
 <h3>Functions</h3>
-<h4><a name="method_pollable.ready"><code>[method]pollable.ready: func</code></a></h4>
+<h4><a name="method_pollable.ready"></a><code>[method]pollable.ready: func</code></h4>
 <p>Return the readiness of a pollable. This function never blocks.</p>
 <p>Returns <code>true</code> when the pollable is ready, and <code>false</code> otherwise.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_pollable.ready.self"><code>self</code></a>: borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
+<li><a name="method_pollable.ready.self"></a><code>self</code>: borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_pollable.ready.0"></a> <code>bool</code></li>
 </ul>
-<h4><a name="method_pollable.block"><code>[method]pollable.block: func</code></a></h4>
+<h4><a name="method_pollable.block"></a><code>[method]pollable.block: func</code></h4>
 <p><code>block</code> returns immediately if the pollable is ready, and otherwise
 blocks until ready.</p>
 <p>This function is equivalent to calling <code>poll.poll</code> on a list
 containing only this pollable.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_pollable.block.self"><code>self</code></a>: borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
+<li><a name="method_pollable.block.self"></a><code>self</code>: borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
 </ul>
-<h4><a name="poll"><code>poll: func</code></a></h4>
+<h4><a name="poll"></a><code>poll: func</code></h4>
 <p>Poll for completion on a set of pollables.</p>
 <p>This function takes a list of pollables, which identify I/O sources of
 interest, and waits until one or more of the events is ready for I/O.</p>
@@ -100,42 +100,42 @@ the pollables has an error, it is indicated by marking the source as
 being reaedy for I/O.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="poll.in"><code>in</code></a>: list&lt;borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;&gt;</li>
+<li><a name="poll.in"></a><code>in</code>: list&lt;borrow&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="poll.0"></a> list&lt;<code>u32</code>&gt;</li>
 </ul>
-<h2><a name="wasi:io_streams_0.2.0">Import interface wasi:io/streams@0.2.0</a></h2>
+<h2><a name="wasi:io_streams_0.2.0"></a>Import interface wasi:io/streams@0.2.0</h2>
 <p>WASI I/O is an I/O abstraction API which is currently focused on providing
 stream types.</p>
 <p>In the future, the component model is expected to add built-in stream types;
 when it does, they are expected to subsume this API.</p>
 <hr />
 <h3>Types</h3>
-<h4><a name="error"><code>type error</code></a></h4>
+<h4><a name="error"></a><code>type error</code></h4>
 <p><a href="#error"><a href="#error"><code>error</code></a></a></p>
 <p>
-#### <a name="pollable">`type pollable`</a>
+#### <a name="pollable"></a>`type pollable`
 [`pollable`](#pollable)
 <p>
-#### <a name="stream_error">`variant stream-error`</a>
+#### <a name="stream_error"></a>`variant stream-error`
 <p>An error for input-stream and output-stream operations.</p>
 <h5>Variant Cases</h5>
 <ul>
 <li>
-<p><a name="stream_error.last_operation_failed"><code>last-operation-failed</code></a>: own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</p>
+<p><a name="stream_error.last_operation_failed"></a><code>last-operation-failed</code>: own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</p>
 <p>The last operation (a write or flush) failed before completion.
 <p>More information is available in the <a href="#error"><code>error</code></a> payload.</p>
 </li>
 <li>
-<p><a name="stream_error.closed"><code>closed</code></a></p>
+<p><a name="stream_error.closed"></a><code>closed</code></p>
 <p>The stream is closed: no more input will be accepted by the
 stream. A closed output-stream will return this error on all
 future operations.
 </li>
 </ul>
-<h4><a name="input_stream"><code>resource input-stream</code></a></h4>
+<h4><a name="input_stream"></a><code>resource input-stream</code></h4>
 <p>An input bytestream.</p>
 <p><a href="#input_stream"><code>input-stream</code></a>s are <em>non-blocking</em> to the extent practical on underlying
 platforms. I/O operations always return promptly; if fewer bytes are
@@ -143,7 +143,7 @@ promptly available than requested, they return the number of bytes promptly
 available, which could even be zero. To wait for data to be available,
 use the <code>subscribe</code> function to obtain a <a href="#pollable"><code>pollable</code></a> which can be polled
 for using <code>wasi:io/poll</code>.</p>
-<h4><a name="output_stream"><code>resource output-stream</code></a></h4>
+<h4><a name="output_stream"></a><code>resource output-stream</code></h4>
 <p>An output bytestream.</p>
 <h2><a href="#output_stream"><code>output-stream</code></a>s are <em>non-blocking</em> to the extent practical on
 underlying platforms. Except where specified otherwise, I/O operations also
@@ -152,7 +152,7 @@ promptly, which could even be zero. To wait for the stream to be ready to
 accept data, the <code>subscribe</code> function to obtain a <a href="#pollable"><code>pollable</code></a> which can be
 polled for using <code>wasi:io/poll</code>.</h2>
 <h3>Functions</h3>
-<h4><a name="method_input_stream.read"><code>[method]input-stream.read: func</code></a></h4>
+<h4><a name="method_input_stream.read"></a><code>[method]input-stream.read: func</code></h4>
 <p>Perform a non-blocking read from the stream.</p>
 <p>When the source of a <code>read</code> is binary data, the bytes from the source
 are returned verbatim. When the source of a <code>read</code> is known to the
@@ -176,51 +176,51 @@ as a return value by the callee. The callee may return a list of bytes
 less than <code>len</code> in size while more bytes are available for reading.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_input_stream.read.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
-<li><a name="method_input_stream.read.len"><code>len</code></a>: <code>u64</code></li>
+<li><a name="method_input_stream.read.self"></a><code>self</code>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_input_stream.read.len"></a><code>len</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_input_stream.read.0"></a> result&lt;list&lt;<code>u8</code>&gt;, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_input_stream.blocking_read"><code>[method]input-stream.blocking-read: func</code></a></h4>
+<h4><a name="method_input_stream.blocking_read"></a><code>[method]input-stream.blocking-read: func</code></h4>
 <p>Read bytes from a stream, after blocking until at least one byte can
 be read. Except for blocking, behavior is identical to <code>read</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_input_stream.blocking_read.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
-<li><a name="method_input_stream.blocking_read.len"><code>len</code></a>: <code>u64</code></li>
+<li><a name="method_input_stream.blocking_read.self"></a><code>self</code>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_input_stream.blocking_read.len"></a><code>len</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_input_stream.blocking_read.0"></a> result&lt;list&lt;<code>u8</code>&gt;, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_input_stream.skip"><code>[method]input-stream.skip: func</code></a></h4>
+<h4><a name="method_input_stream.skip"></a><code>[method]input-stream.skip: func</code></h4>
 <p>Skip bytes from a stream. Returns number of bytes skipped.</p>
 <p>Behaves identical to <code>read</code>, except instead of returning a list
 of bytes, returns the number of bytes consumed from the stream.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_input_stream.skip.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
-<li><a name="method_input_stream.skip.len"><code>len</code></a>: <code>u64</code></li>
+<li><a name="method_input_stream.skip.self"></a><code>self</code>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_input_stream.skip.len"></a><code>len</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_input_stream.skip.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_input_stream.blocking_skip"><code>[method]input-stream.blocking-skip: func</code></a></h4>
+<h4><a name="method_input_stream.blocking_skip"></a><code>[method]input-stream.blocking-skip: func</code></h4>
 <p>Skip bytes from a stream, after blocking until at least one byte
 can be skipped. Except for blocking behavior, identical to <code>skip</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_input_stream.blocking_skip.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
-<li><a name="method_input_stream.blocking_skip.len"><code>len</code></a>: <code>u64</code></li>
+<li><a name="method_input_stream.blocking_skip.self"></a><code>self</code>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_input_stream.blocking_skip.len"></a><code>len</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_input_stream.blocking_skip.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_input_stream.subscribe"><code>[method]input-stream.subscribe: func</code></a></h4>
+<h4><a name="method_input_stream.subscribe"></a><code>[method]input-stream.subscribe: func</code></h4>
 <p>Create a <a href="#pollable"><code>pollable</code></a> which will resolve once either the specified stream
 has bytes available to read or the other end of the stream has been
 closed.
@@ -229,13 +229,13 @@ Implementations may trap if the <a href="#input_stream"><code>input-stream</code
 all derived <a href="#pollable"><code>pollable</code></a>s created with this function are dropped.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_input_stream.subscribe.self"><code>self</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_input_stream.subscribe.self"></a><code>self</code>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_input_stream.subscribe.0"></a> own&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.check_write"><code>[method]output-stream.check-write: func</code></a></h4>
+<h4><a name="method_output_stream.check_write"></a><code>[method]output-stream.check-write: func</code></h4>
 <p>Check readiness for writing. This function never blocks.</p>
 <p>Returns the number of bytes permitted for the next call to <code>write</code>,
 or an error. Calling <code>write</code> with more bytes than this function has
@@ -245,13 +245,13 @@ become ready when this function will report at least 1 byte, or an
 error.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.check_write.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.check_write.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.check_write.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.write"><code>[method]output-stream.write: func</code></a></h4>
+<h4><a name="method_output_stream.write"></a><code>[method]output-stream.write: func</code></h4>
 <p>Perform a write. This function never blocks.</p>
 <p>When the destination of a <code>write</code> is binary data, the bytes from
 <code>contents</code> are written verbatim. When the destination of a <code>write</code> is
@@ -264,14 +264,14 @@ length of less than or equal to n. Otherwise, this function will trap.</p>
 the last call to check-write provided a permit.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.write.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
-<li><a name="method_output_stream.write.contents"><code>contents</code></a>: list&lt;<code>u8</code>&gt;</li>
+<li><a name="method_output_stream.write.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.write.contents"></a><code>contents</code>: list&lt;<code>u8</code>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.write.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.blocking_write_and_flush"><code>[method]output-stream.blocking-write-and-flush: func</code></a></h4>
+<h4><a name="method_output_stream.blocking_write_and_flush"></a><code>[method]output-stream.blocking-write-and-flush: func</code></h4>
 <p>Perform a write of up to 4096 bytes, and then flush the stream. Block
 until all of these operations are complete, or an error occurs.</p>
 <p>This is a convenience wrapper around the use of <code>check-write</code>,
@@ -295,14 +295,14 @@ let _ = this.check-write();         // eliding error handling
 </code></pre>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.blocking_write_and_flush.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
-<li><a name="method_output_stream.blocking_write_and_flush.contents"><code>contents</code></a>: list&lt;<code>u8</code>&gt;</li>
+<li><a name="method_output_stream.blocking_write_and_flush.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.blocking_write_and_flush.contents"></a><code>contents</code>: list&lt;<code>u8</code>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.blocking_write_and_flush.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.flush"><code>[method]output-stream.flush: func</code></a></h4>
+<h4><a name="method_output_stream.flush"></a><code>[method]output-stream.flush: func</code></h4>
 <p>Request to flush buffered output. This function never blocks.</p>
 <p>This tells the output-stream that the caller intends any buffered
 output to be flushed. the output which is expected to be flushed
@@ -313,24 +313,24 @@ completed. The <code>subscribe</code> pollable will become ready when the
 flush has completed and the stream can accept more writes.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.flush.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.flush.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.flush.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.blocking_flush"><code>[method]output-stream.blocking-flush: func</code></a></h4>
+<h4><a name="method_output_stream.blocking_flush"></a><code>[method]output-stream.blocking-flush: func</code></h4>
 <p>Request to flush buffered output, and block until flush completes
 and stream is ready for writing again.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.blocking_flush.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.blocking_flush.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.blocking_flush.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.subscribe"><code>[method]output-stream.subscribe: func</code></a></h4>
+<h4><a name="method_output_stream.subscribe"></a><code>[method]output-stream.subscribe: func</code></h4>
 <p>Create a <a href="#pollable"><code>pollable</code></a> which will resolve once the output-stream
 is ready for more writing, or an error has occured. When this
 pollable is ready, <code>check-write</code> will return <code>ok(n)</code> with n&gt;0, or an
@@ -341,13 +341,13 @@ Implementations may trap if the <a href="#output_stream"><code>output-stream</co
 all derived <a href="#pollable"><code>pollable</code></a>s created with this function are dropped.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.subscribe.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.subscribe.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.subscribe.0"></a> own&lt;<a href="#pollable"><a href="#pollable"><code>pollable</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.write_zeroes"><code>[method]output-stream.write-zeroes: func</code></a></h4>
+<h4><a name="method_output_stream.write_zeroes"></a><code>[method]output-stream.write-zeroes: func</code></h4>
 <p>Write zeroes to a stream.</p>
 <p>This should be used precisely like <code>write</code> with the exact same
 preconditions (must use check-write first), but instead of
@@ -355,14 +355,14 @@ passing a list of bytes, you simply pass the number of zero-bytes
 that should be written.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.write_zeroes.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
-<li><a name="method_output_stream.write_zeroes.len"><code>len</code></a>: <code>u64</code></li>
+<li><a name="method_output_stream.write_zeroes.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.write_zeroes.len"></a><code>len</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.write_zeroes.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.blocking_write_zeroes_and_flush"><code>[method]output-stream.blocking-write-zeroes-and-flush: func</code></a></h4>
+<h4><a name="method_output_stream.blocking_write_zeroes_and_flush"></a><code>[method]output-stream.blocking-write-zeroes-and-flush: func</code></h4>
 <p>Perform a write of up to 4096 zeroes, and then flush the stream.
 Block until all of these operations are complete, or an error
 occurs.</p>
@@ -386,14 +386,14 @@ let _ = this.check-write();         // eliding error handling
 </code></pre>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.blocking_write_zeroes_and_flush.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
-<li><a name="method_output_stream.blocking_write_zeroes_and_flush.len"><code>len</code></a>: <code>u64</code></li>
+<li><a name="method_output_stream.blocking_write_zeroes_and_flush.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.blocking_write_zeroes_and_flush.len"></a><code>len</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.blocking_write_zeroes_and_flush.0"></a> result&lt;_, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.splice"><code>[method]output-stream.splice: func</code></a></h4>
+<h4><a name="method_output_stream.splice"></a><code>[method]output-stream.splice: func</code></h4>
 <p>Read from one stream and write to another.</p>
 <p>The behavior of splice is equivelant to:</p>
 <ol>
@@ -408,33 +408,33 @@ let _ = this.check-write();         // eliding error handling
 than <code>len</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.splice.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
-<li><a name="method_output_stream.splice.src"><code>src</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
-<li><a name="method_output_stream.splice.len"><code>len</code></a>: <code>u64</code></li>
+<li><a name="method_output_stream.splice.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.splice.src"></a><code>src</code>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.splice.len"></a><code>len</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.splice.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_output_stream.blocking_splice"><code>[method]output-stream.blocking-splice: func</code></a></h4>
+<h4><a name="method_output_stream.blocking_splice"></a><code>[method]output-stream.blocking-splice: func</code></h4>
 <p>Read from one stream and write to another, with blocking.</p>
 <p>This is similar to <code>splice</code>, except that it blocks until the
 <a href="#output_stream"><code>output-stream</code></a> is ready for writing, and the <a href="#input_stream"><code>input-stream</code></a>
 is ready for reading, before performing the <code>splice</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_output_stream.blocking_splice.self"><code>self</code></a>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
-<li><a name="method_output_stream.blocking_splice.src"><code>src</code></a>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
-<li><a name="method_output_stream.blocking_splice.len"><code>len</code></a>: <code>u64</code></li>
+<li><a name="method_output_stream.blocking_splice.self"></a><code>self</code>: borrow&lt;<a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.blocking_splice.src"></a><code>src</code>: borrow&lt;<a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a>&gt;</li>
+<li><a name="method_output_stream.blocking_splice.len"></a><code>len</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_output_stream.blocking_splice.0"></a> result&lt;<code>u64</code>, <a href="#stream_error"><a href="#stream_error"><code>stream-error</code></a></a>&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_wasi_keyvalue_error_0.1.0">Import interface wasi:keyvalue/wasi-keyvalue-error@0.1.0</a></h2>
+<h2><a name="wasi:keyvalue_wasi_keyvalue_error_0.2.0_draft"></a>Import interface wasi:keyvalue/wasi-keyvalue-error@0.2.0-draft</h2>
 <hr />
 <h3>Types</h3>
-<h4><a name="error"><code>resource error</code></a></h4>
+<h4><a name="error"></a><code>resource error</code></h4>
 <p>An error resource type for keyvalue operations.</p>
 <p>Common errors:</p>
 <ul>
@@ -451,29 +451,29 @@ of the error. In the future, this will be extended to provide more information
 about the error.
 Soon: switch to <code>resource error { ... }</code></h2>
 <h3>Functions</h3>
-<h4><a name="method_error.trace"><code>[method]error.trace: func</code></a></h4>
+<h4><a name="method_error.trace"></a><code>[method]error.trace: func</code></h4>
 <h5>Params</h5>
 <ul>
-<li><a name="method_error.trace.self"><code>self</code></a>: borrow&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="method_error.trace.self"></a><code>self</code>: borrow&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_error.trace.0"></a> <code>string</code></li>
 </ul>
-<h2><a name="wasi:keyvalue_types_0.1.0">Import interface wasi:keyvalue/types@0.1.0</a></h2>
+<h2><a name="wasi:keyvalue_types_0.2.0_draft"></a>Import interface wasi:keyvalue/types@0.2.0-draft</h2>
 <p>A generic keyvalue interface for WASI.</p>
 <hr />
 <h3>Types</h3>
-<h4><a name="input_stream"><code>type input-stream</code></a></h4>
+<h4><a name="input_stream"></a><code>type input-stream</code></h4>
 <p><a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a></p>
 <p>
-#### <a name="output_stream">`type output-stream`</a>
+#### <a name="output_stream"></a>`type output-stream`
 [`output-stream`](#output_stream)
 <p>
-#### <a name="error">`type error`</a>
+#### <a name="error"></a>`type error`
 [`error`](#error)
 <p>
-#### <a name="bucket">`resource bucket`</a>
+#### <a name="bucket"></a>`resource bucket`
 <p>A bucket is a collection of key-value pairs. Each key-value pair is stored
 as a entry in the bucket, and the bucket itself acts as a collection of all
 these entries.</p>
@@ -490,22 +490,22 @@ can very depending on the specific implementation. For example,</p>
 </ol>
 <p>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a collection of key-value
 Soon: switch to <code>resource bucket { ... }</code></p>
-<h4><a name="key"><code>type key</code></a></h4>
+<h4><a name="key"></a><code>type key</code></h4>
 <p><code>string</code></p>
 <p>A key is a unique identifier for a value in a bucket. The key is used to
 retrieve the value from the bucket.
-<h4><a name="outgoing_value"><code>resource outgoing-value</code></a></h4>
+<h4><a name="outgoing_value"></a><code>resource outgoing-value</code></h4>
 <p>A value is the data stored in a key-value pair. The value can be of any type
 that can be represented in a byte array. It provides a way to write the value
 to the output-stream defined in the <code>wasi-io</code> interface.
 Soon: switch to <code>resource value { ... }</code></p>
-<h4><a name="outgoing_value_body_async"><code>type outgoing-value-body-async</code></a></h4>
+<h4><a name="outgoing_value_body_async"></a><code>type outgoing-value-body-async</code></h4>
 <p><a href="#output_stream"><a href="#output_stream"><code>output-stream</code></a></a></p>
 <p>
-#### <a name="outgoing_value_body_sync">`type outgoing-value-body-sync`</a>
+#### <a name="outgoing_value_body_sync"></a>`type outgoing-value-body-sync`
 [`outgoing-value-body-sync`](#outgoing_value_body_sync)
 <p>
-#### <a name="incoming_value">`resource incoming-value`</a>
+#### <a name="incoming_value"></a>`resource incoming-value`
 <p>A incoming-value is a wrapper around a value. It provides a way to read the value
 from the <a href="#input_stream"><code>input-stream</code></a> defined in the <code>wasi-io</code> interface.</p>
 <p>The incoming-value provides two ways to consume the value:</p>
@@ -519,87 +519,87 @@ This is useful when the value is large and the caller wants to allocate a buffer
 the right size to consume the value.
 Soon: switch to <code>resource incoming-value { ... }</code></li>
 </ol>
-<h4><a name="incoming_value_async_body"><code>type incoming-value-async-body</code></a></h4>
+<h4><a name="incoming_value_async_body"></a><code>type incoming-value-async-body</code></h4>
 <p><a href="#input_stream"><a href="#input_stream"><code>input-stream</code></a></a></p>
 <p>
-#### <a name="incoming_value_sync_body">`type incoming-value-sync-body`</a>
+#### <a name="incoming_value_sync_body"></a>`type incoming-value-sync-body`
 [`incoming-value-sync-body`](#incoming_value_sync_body)
 <p>
 ----
 <h3>Functions</h3>
-<h4><a name="static_bucket.open_bucket"><code>[static]bucket.open-bucket: func</code></a></h4>
+<h4><a name="static_bucket.open_bucket"></a><code>[static]bucket.open-bucket: func</code></h4>
 <p>Opens a bucket with the given name.</p>
 <p>If any error occurs, including if the bucket does not exist, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="static_bucket.open_bucket.name"><code>name</code></a>: <code>string</code></li>
+<li><a name="static_bucket.open_bucket.name"></a><code>name</code>: <code>string</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="static_bucket.open_bucket.0"></a> result&lt;own&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="static_outgoing_value.new_outgoing_value"><code>[static]outgoing-value.new-outgoing-value: func</code></a></h4>
+<h4><a name="static_outgoing_value.new_outgoing_value"></a><code>[static]outgoing-value.new-outgoing-value: func</code></h4>
 <h5>Return values</h5>
 <ul>
 <li><a name="static_outgoing_value.new_outgoing_value.0"></a> own&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
 </ul>
-<h4><a name="method_outgoing_value.outgoing_value_write_body_async"><code>[method]outgoing-value.outgoing-value-write-body-async: func</code></a></h4>
+<h4><a name="method_outgoing_value.outgoing_value_write_body_async"></a><code>[method]outgoing-value.outgoing-value-write-body-async: func</code></h4>
 <p>Writes the value to the output-stream asynchronously.
 If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_outgoing_value.outgoing_value_write_body_async.self"><code>self</code></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
+<li><a name="method_outgoing_value.outgoing_value_write_body_async.self"></a><code>self</code>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_outgoing_value.outgoing_value_write_body_async.0"></a> result&lt;own&lt;<a href="#outgoing_value_body_async"><a href="#outgoing_value_body_async"><code>outgoing-value-body-async</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="method_outgoing_value.outgoing_value_write_body_sync"><code>[method]outgoing-value.outgoing-value-write-body-sync: func</code></a></h4>
+<h4><a name="method_outgoing_value.outgoing_value_write_body_sync"></a><code>[method]outgoing-value.outgoing-value-write-body-sync: func</code></h4>
 <p>Writes the value to the output-stream synchronously.
 If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_outgoing_value.outgoing_value_write_body_sync.self"><code>self</code></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
-<li><a name="method_outgoing_value.outgoing_value_write_body_sync.value"><code>value</code></a>: <a href="#outgoing_value_body_sync"><a href="#outgoing_value_body_sync"><code>outgoing-value-body-sync</code></a></a></li>
+<li><a name="method_outgoing_value.outgoing_value_write_body_sync.self"></a><code>self</code>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
+<li><a name="method_outgoing_value.outgoing_value_write_body_sync.value"></a><code>value</code>: <a href="#outgoing_value_body_sync"><a href="#outgoing_value_body_sync"><code>outgoing-value-body-sync</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_outgoing_value.outgoing_value_write_body_sync.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="static_incoming_value.incoming_value_consume_sync"><code>[static]incoming-value.incoming-value-consume-sync: func</code></a></h4>
+<h4><a name="static_incoming_value.incoming_value_consume_sync"></a><code>[static]incoming-value.incoming-value-consume-sync: func</code></h4>
 <p>Consumes the value synchronously and returns the value as a list of bytes.
 If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="static_incoming_value.incoming_value_consume_sync.this"><code>this</code></a>: own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
+<li><a name="static_incoming_value.incoming_value_consume_sync.this"></a><code>this</code>: own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="static_incoming_value.incoming_value_consume_sync.0"></a> result&lt;<a href="#incoming_value_sync_body"><a href="#incoming_value_sync_body"><code>incoming-value-sync-body</code></a></a>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="static_incoming_value.incoming_value_consume_async"><code>[static]incoming-value.incoming-value-consume-async: func</code></a></h4>
+<h4><a name="static_incoming_value.incoming_value_consume_async"></a><code>[static]incoming-value.incoming-value-consume-async: func</code></h4>
 <p>Consumes the value asynchronously and returns the value as an <a href="#input_stream"><code>input-stream</code></a>.
 If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="static_incoming_value.incoming_value_consume_async.this"><code>this</code></a>: own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
+<li><a name="static_incoming_value.incoming_value_consume_async.this"></a><code>this</code>: own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="static_incoming_value.incoming_value_consume_async.0"></a> result&lt;own&lt;<a href="#incoming_value_async_body"><a href="#incoming_value_async_body"><code>incoming-value-async-body</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="method_incoming_value.incoming_value_size"><code>[method]incoming-value.incoming-value-size: func</code></a></h4>
+<h4><a name="method_incoming_value.incoming_value_size"></a><code>[method]incoming-value.incoming-value-size: func</code></h4>
 <p>The size of the value in bytes.
 If the size is unknown or unavailable, this function returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="method_incoming_value.incoming_value_size.self"><code>self</code></a>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
+<li><a name="method_incoming_value.incoming_value_size.self"></a><code>self</code>: borrow&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_incoming_value.incoming_value_size.0"></a> result&lt;<code>u64</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_eventual_0.1.0">Import interface wasi:keyvalue/eventual@0.1.0</a></h2>
+<h2><a name="wasi:keyvalue_eventual_0.2.0_draft"></a>Import interface wasi:keyvalue/eventual@0.2.0-draft</h2>
 <p>A keyvalue interface that provides eventually consistent CRUD operations.</p>
 <p>A CRUD operation is an operation that acts on a single key-value pair.</p>
 <p>The value in the key-value pair is defined as a <code>u8</code> byte array and the intention
@@ -618,24 +618,24 @@ if we pause the updates to the system, the system eventually will return
 the last updated value for read.</p>
 <hr />
 <h3>Types</h3>
-<h4><a name="bucket"><code>type bucket</code></a></h4>
+<h4><a name="bucket"></a><code>type bucket</code></h4>
 <p><a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></p>
 <p>
-#### <a name="error">`type error`</a>
+#### <a name="error"></a>`type error`
 [`error`](#error)
 <p>
-#### <a name="incoming_value">`type incoming-value`</a>
+#### <a name="incoming_value"></a>`type incoming-value`
 [`incoming-value`](#incoming_value)
 <p>
-#### <a name="key">`type key`</a>
+#### <a name="key"></a>`type key`
 [`key`](#key)
 <p>
-#### <a name="outgoing_value">`type outgoing-value`</a>
+#### <a name="outgoing_value"></a>`type outgoing-value`
 [`outgoing-value`](#outgoing_value)
 <p>
 ----
 <h3>Functions</h3>
-<h4><a name="get"><code>get: func</code></a></h4>
+<h4><a name="get"></a><code>get: func</code></h4>
 <p>Get the value associated with the key in the bucket.</p>
 <p>The value is returned as an option. If the key-value pair exists in the
 bucket, it returns <code>Ok(value)</code>. If the key does not exist in the
@@ -643,56 +643,56 @@ bucket, it returns <code>Ok(none)</code>.</p>
 <p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="get.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="get.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="get.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="get.key"></a><a href="#key"><code>key</code></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="get.0"></a> result&lt;option&lt;own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="set"><code>set: func</code></a></h4>
+<h4><a name="set"></a><code>set: func</code></h4>
 <p>Set the value associated with the key in the bucket. If the key already
 exists in the bucket, it overwrites the value.</p>
 <p>If the key does not exist in the bucket, it creates a new key-value pair.</p>
 <p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="set.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="set.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
-<li><a name="set.outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
+<li><a name="set.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="set.key"></a><a href="#key"><code>key</code></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="set.outgoing_value"></a><a href="#outgoing_value"><code>outgoing-value</code></a>: borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="set.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="delete"><code>delete: func</code></a></h4>
+<h4><a name="delete"></a><code>delete: func</code></h4>
 <p>Delete the key-value pair associated with the key in the bucket.</p>
 <p>If the key does not exist in the bucket, it does nothing.</p>
 <p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="delete.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="delete.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="delete.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="delete.key"></a><a href="#key"><code>key</code></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="delete.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="exists"><code>exists: func</code></a></h4>
+<h4><a name="exists"></a><code>exists: func</code></h4>
 <p>Check if the key exists in the bucket.</p>
 <p>If the key exists in the bucket, it returns <code>Ok(true)</code>. If the key does
 not exist in the bucket, it returns <code>Ok(false)</code>.</p>
 <p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="exists.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="exists.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="exists.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="exists.key"></a><a href="#key"><code>key</code></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="exists.0"></a> result&lt;<code>bool</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_atomic_0.1.0">Import interface wasi:keyvalue/atomic@0.1.0</a></h2>
+<h2><a name="wasi:keyvalue_atomic_0.2.0_draft"></a>Import interface wasi:keyvalue/atomic@0.2.0-draft</h2>
 <p>A keyvalue interface that provides atomic operations.</p>
 <p>Atomic operations are single, indivisible operations. When a fault causes
 an atomic operation to fail, it will appear to the invoker of the atomic
@@ -700,18 +700,18 @@ operation that the action either completed successfully or did nothing
 at all.</p>
 <hr />
 <h3>Types</h3>
-<h4><a name="bucket"><code>type bucket</code></a></h4>
+<h4><a name="bucket"></a><code>type bucket</code></h4>
 <p><a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></p>
 <p>
-#### <a name="error">`type error`</a>
+#### <a name="error"></a>`type error`
 [`error`](#error)
 <p>
-#### <a name="key">`type key`</a>
+#### <a name="key"></a>`type key`
 [`key`](#key)
 <p>
 ----
 <h3>Functions</h3>
-<h4><a name="increment"><code>increment: func</code></a></h4>
+<h4><a name="increment"></a><code>increment: func</code></h4>
 <p>Atomically increment the value associated with the key in the bucket by the
 given delta. It returns the new value.</p>
 <p>If the key does not exist in the bucket, it creates a new key-value pair
@@ -719,15 +719,15 @@ with the value set to the given delta.</p>
 <p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="increment.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="increment.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
-<li><a name="increment.delta"><code>delta</code></a>: <code>u64</code></li>
+<li><a name="increment.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="increment.key"></a><a href="#key"><code>key</code></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="increment.delta"></a><code>delta</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="increment.0"></a> result&lt;<code>u64</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="compare_and_swap"><code>compare-and-swap: func</code></a></h4>
+<h4><a name="compare_and_swap"></a><code>compare-and-swap: func</code></h4>
 <p>Compare-and-swap (CAS) atomically updates the value associated with the key
 in the bucket if the value matches the old value. This operation returns
 <code>Ok(true)</code> if the swap was successful, <code>Ok(false)</code> if the value did not match,</p>
@@ -737,16 +737,16 @@ and was replaced with the <code>new</code> value.</p>
 <p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="compare_and_swap.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="compare_and_swap.key"><a href="#key"><code>key</code></a></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
-<li><a name="compare_and_swap.old"><code>old</code></a>: <code>u64</code></li>
-<li><a name="compare_and_swap.new"><code>new</code></a>: <code>u64</code></li>
+<li><a name="compare_and_swap.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="compare_and_swap.key"></a><a href="#key"><code>key</code></a>: <a href="#key"><a href="#key"><code>key</code></a></a></li>
+<li><a name="compare_and_swap.old"></a><code>old</code>: <code>u64</code></li>
+<li><a name="compare_and_swap.new"></a><code>new</code>: <code>u64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="compare_and_swap.0"></a> result&lt;<code>bool</code>, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_eventual_batch_0.1.0">Import interface wasi:keyvalue/eventual-batch@0.1.0</a></h2>
+<h2><a name="wasi:keyvalue_eventual_batch_0.2.0_draft"></a>Import interface wasi:keyvalue/eventual-batch@0.2.0-draft</h2>
 <p>A keyvalue interface that provides eventually consistent batch operations.</p>
 <p>A batch operation is an operation that operates on multiple keys at once.</p>
 <p>Batch operations are useful for reducing network round-trip time. For example,
@@ -766,24 +766,24 @@ meaning that if a write operation completes, subsequent read operations may not 
 the value that was written.</p>
 <hr />
 <h3>Types</h3>
-<h4><a name="bucket"><code>type bucket</code></a></h4>
+<h4><a name="bucket"></a><code>type bucket</code></h4>
 <p><a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></p>
 <p>
-#### <a name="error">`type error`</a>
+#### <a name="error"></a>`type error`
 [`error`](#error)
 <p>
-#### <a name="key">`type key`</a>
+#### <a name="key"></a>`type key`
 [`key`](#key)
 <p>
-#### <a name="incoming_value">`type incoming-value`</a>
+#### <a name="incoming_value"></a>`type incoming-value`
 [`incoming-value`](#incoming_value)
 <p>
-#### <a name="outgoing_value">`type outgoing-value`</a>
+#### <a name="outgoing_value"></a>`type outgoing-value`
 [`outgoing-value`](#outgoing_value)
 <p>
 ----
 <h3>Functions</h3>
-<h4><a name="get_many"><code>get-many: func</code></a></h4>
+<h4><a name="get_many"></a><code>get-many: func</code></h4>
 <p>Get the values associated with the keys in the bucket. It returns a list of
 incoming-value that can be consumed to get the value associated with the key.</p>
 <p>If any of the keys do not exist in the bucket, it returns a <code>none</code> value for
@@ -793,14 +793,14 @@ that key in the list.</p>
 <p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="get_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="get_many.keys"><a href="#keys"><code>keys</code></a></a>: list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;</li>
+<li><a name="get_many.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="get_many.keys"></a><a href="#keys"><code>keys</code></a>: list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="get_many.0"></a> result&lt;list&lt;option&lt;own&lt;<a href="#incoming_value"><a href="#incoming_value"><code>incoming-value</code></a></a>&gt;&gt;&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="keys"><code>keys: func</code></a></h4>
+<h4><a name="keys"></a><code>keys: func</code></h4>
 <p>Get all the keys in the bucket. It returns a list of keys.</p>
 <p>Note that the keys are not guaranteed to be returned in any particular order.</p>
 <p>If the bucket is empty, it returns an empty list.</p>
@@ -808,13 +808,13 @@ that key in the list.</p>
 <p>If any error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="keys.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="keys.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="keys.0"></a> result&lt;list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="set_many"><code>set-many: func</code></a></h4>
+<h4><a name="set_many"></a><code>set-many: func</code></h4>
 <p>Set the values associated with the keys in the bucket. If the key already
 exists in the bucket, it overwrites the value.</p>
 <p>Note that the key-value pairs are not guaranteed to be set in the order
@@ -827,14 +827,14 @@ set while others might fail.</p>
 <p>Other concurrent operations may also be able to see the partial results.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="set_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="set_many.key_values"><code>key-values</code></a>: list&lt;(<a href="#key"><a href="#key"><code>key</code></a></a>, borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;)&gt;</li>
+<li><a name="set_many.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="set_many.key_values"></a><code>key-values</code>: list&lt;(<a href="#key"><a href="#key"><code>key</code></a></a>, borrow&lt;<a href="#outgoing_value"><a href="#outgoing_value"><code>outgoing-value</code></a></a>&gt;)&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="set_many.0"></a> result&lt;_, own&lt;<a href="#error"><a href="#error"><code>error</code></a></a>&gt;&gt;</li>
 </ul>
-<h4><a name="delete_many"><code>delete-many: func</code></a></h4>
+<h4><a name="delete_many"></a><code>delete-many: func</code></h4>
 <p>Delete the key-value pairs associated with the keys in the bucket.</p>
 <p>Note that the key-value pairs are not guaranteed to be deleted in the order
 they are provided.</p>
@@ -846,8 +846,8 @@ deleted while others might fail.</p>
 <p>Other concurrent operations may also be able to see the partial results.</p>
 <h5>Params</h5>
 <ul>
-<li><a name="delete_many.bucket"><a href="#bucket"><code>bucket</code></a></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="delete_many.keys"><a href="#keys"><code>keys</code></a></a>: list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;</li>
+<li><a name="delete_many.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="delete_many.keys"></a><a href="#keys"><code>keys</code></a>: list&lt;<a href="#key"><a href="#key"><code>key</code></a></a>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
