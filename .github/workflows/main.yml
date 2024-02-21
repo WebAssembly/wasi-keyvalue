@@ -19,4 +19,4 @@ jobs:
     - uses: WebAssembly/wit-abi-up-to-date@v17
       with:
         worlds: 'imports keyvalue-handle-watch'
-        wit-bindgen: '0.16.0'
+        wit-bindgen: '0.18.0'
