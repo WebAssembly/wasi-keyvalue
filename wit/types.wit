@@ -15,13 +15,13 @@ interface types {
 	/// 7. Azure Cosmos DB calls a collection of key-value pairs a container
 	///
 	/// In this interface, we use the term `bucket` to refer to a collection of key-value pairs
-	resource store {
+	resource bucket {
 		/// Get the store with the specified identifier.
 		///
 		/// `identifier` must refer to a store provided by the host.
 		///
 		/// `error::no-such-store` will be raised if the `identifier` is not recognized.
-		get: static func(identifier: string) -> result<store, error>;
+		get: static func(identifier: string) -> result<bucket, error>;
 	}
 
 	/// The set of errors which may be raised by functions in this interface
