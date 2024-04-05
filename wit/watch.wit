@@ -4,7 +4,7 @@
 /// keyvalue changes.
 interface watcher {
 	/// A keyvalue interface that provides handle-watch operations.
-	use types.{bucket};
+	use store.{bucket};
 
 	/// Handle the `set` event for the given bucket and key. It includes a reference to the `bucket`
 	/// that can be used to interact with the store.
