@@ -21,6 +21,6 @@ world imports {
 }
 
 world watch-service {
-    include imports;
+	include imports;
 	export watcher;
 }

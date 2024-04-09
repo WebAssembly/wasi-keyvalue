@@ -25,13 +25,13 @@ The implementations must be able to run on Linux, MacOS, and Windows.
 
 A testsuite that passes on the platforms and implementations mentioned above.
 
-## Table of Contents
+### Table of Contents
 
 - [WASI Key-Value Store](#wasi-key-value-store)
     - [Current Phase](#current-phase)
     - [Champions](#champions)
     - [Portability Criteria](#portability-criteria)
-  - [Table of Contents](#table-of-contents)
+    - [Table of Contents](#table-of-contents)
     - [Introduction](#introduction)
     - [Goals](#goals)
     - [Non-goals](#non-goals)
@@ -64,8 +64,8 @@ replication, and sharding) are not specified, and are provider specific.
 ### Goals
 
 The primary goal of this API is to allow WASI programs to access a wide variety of key-value stores.
-It meant the `wasi:keyvalue` interfaces to be implementable by a wide variety of key-value stores,
-including but not limited to: in-memory key-value stores, on-disk key-value stores, document
+This means the `wasi:keyvalue` interfaces should be implementable by a wide variety of key-value
+stores, including but not limited to: in-memory key-value stores, on-disk key-value stores, document
 databases, relational databases, and either single-node or distributed key-value stores.
 
 The second goal of `wasi:keyvalue` interfaces is to abstract away the network stack, allowing
@@ -95,11 +95,9 @@ minimizing the number of requests and round-trips, and support for asynchronous 
 
 ### API walk-through
 
-The proposal can be understood by first reading the comments of `world.wit`, then `store.wit`,
-`atomic.wit`, `batch.wit`, and finally `types.wit`
-
-[`world.wit`](./wit/world.wit) [`store.wit`](./wit/store.wit) [`atomic.wit`](./wit/atomic.wit)
-[`batch.wit`](./wit/batch.wit) [`types.wit`](./wit/types.wit)
+The proposal can be understood by first reading the comments of [`world.wit`](./wit/world.wit),
+[`store.wit`](./wit/store.wit), [`atomic.wit`](./wit/atomic.wit), and
+[`batch.wit`](./wit/batch.wit).
 
 ### Working with the WIT
 
