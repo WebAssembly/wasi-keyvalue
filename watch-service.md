@@ -1,17 +1,15 @@
-<h1><a name="imports">World imports</a></h1>
-<p>The <code>wasi:keyvalue/imports</code> world provides common APIs for interacting with key-value stores.
-Components targeting this world will be able to do:</p>
-<ol>
-<li>CRUD (create, read, update, delete) operations on key-value stores.</li>
-<li>Atomic <a href="#increment"><code>increment</code></a> and CAS (compare-and-swap) operations.</li>
-<li>Batch operations that can reduce the number of round trips to the network.</li>
-</ol>
+<h1><a name="watch_service">World watch-service</a></h1>
 <ul>
 <li>Imports:
 <ul>
 <li>interface <a href="#wasi:keyvalue_store_0.2.0_draft"><code>wasi:keyvalue/store@0.2.0-draft</code></a></li>
 <li>interface <a href="#wasi:keyvalue_atomics_0.2.0_draft"><code>wasi:keyvalue/atomics@0.2.0-draft</code></a></li>
 <li>interface <a href="#wasi:keyvalue_batch_0.2.0_draft"><code>wasi:keyvalue/batch@0.2.0-draft</code></a></li>
+</ul>
+</li>
+<li>Exports:
+<ul>
+<li>interface <a href="#wasi:keyvalue_watcher_0.2.0_draft"><code>wasi:keyvalue/watcher@0.2.0-draft</code></a></li>
 </ul>
 </li>
 </ul>
@@ -291,4 +289,29 @@ fail.</p>
 <h5>Return values</h5>
 <ul>
 <li><a name="delete_many.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h2><a name="wasi:keyvalue_watcher_0.2.0_draft"></a>Export interface wasi:keyvalue/watcher@0.2.0-draft</h2>
+<hr />
+<h3>Types</h3>
+<h4><a name="bucket"></a><code>type bucket</code></h4>
+<p><a href="#bucket"><a href="#bucket"><code>bucket</code></a></a></p>
+<p>
+----
+<h3>Functions</h3>
+<h4><a name="on_set"></a><code>on-set: func</code></h4>
+<p>Handle the <code>set</code> event for the given bucket and key. It includes a reference to the <a href="#bucket"><code>bucket</code></a>
+that can be used to interact with the store.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="on_set.bucket"></a><a href="#bucket"><code>bucket</code></a>: own&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="on_set.key"></a><code>key</code>: <code>string</code></li>
+<li><a name="on_set.value"></a><code>value</code>: list&lt;<code>u8</code>&gt;</li>
+</ul>
+<h4><a name="on_delete"></a><code>on-delete: func</code></h4>
+<p>Handle the <code>delete</code> event for the given bucket and key. It includes a reference to the
+<a href="#bucket"><code>bucket</code></a> that can be used to interact with the store.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="on_delete.bucket"></a><a href="#bucket"><code>bucket</code></a>: own&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="on_delete.key"></a><code>key</code>: <code>string</code></li>
 </ul>
