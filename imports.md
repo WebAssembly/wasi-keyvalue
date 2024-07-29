@@ -9,13 +9,13 @@ Components targeting this world will be able to do:</p>
 <ul>
 <li>Imports:
 <ul>
-<li>interface <a href="#wasi:keyvalue_store_0.2.0_draft"><code>wasi:keyvalue/store@0.2.0-draft</code></a></li>
-<li>interface <a href="#wasi:keyvalue_atomics_0.2.0_draft"><code>wasi:keyvalue/atomics@0.2.0-draft</code></a></li>
-<li>interface <a href="#wasi:keyvalue_batch_0.2.0_draft"><code>wasi:keyvalue/batch@0.2.0-draft</code></a></li>
+<li>interface <a href="#wasi:keyvalue_store_0.2.0_draft2"><code>wasi:keyvalue/store@0.2.0-draft2</code></a></li>
+<li>interface <a href="#wasi:keyvalue_atomics_0.2.0_draft2"><code>wasi:keyvalue/atomics@0.2.0-draft2</code></a></li>
+<li>interface <a href="#wasi:keyvalue_batch_0.2.0_draft2"><code>wasi:keyvalue/batch@0.2.0-draft2</code></a></li>
 </ul>
 </li>
 </ul>
-<h2><a name="wasi:keyvalue_store_0.2.0_draft"></a>Import interface wasi:keyvalue/store@0.2.0-draft</h2>
+<h2><a name="wasi:keyvalue_store_0.2.0_draft2"></a>Import interface wasi:keyvalue/store@0.2.0-draft2</h2>
 <p>A keyvalue interface that provides eventually consistent key-value operations.</p>
 <p>Each of these operations acts on a single key-value pair.</p>
 <p>The value in the key-value pair is defined as a <code>u8</code> byte array and the intention is that it is
@@ -66,7 +66,7 @@ still see A or B</p>
 <p>The list of keys returned by the query.
 </li>
 <li>
-<p><a name="key_response.cursor"></a><code>cursor</code>: option&lt;<code>u64</code>&gt;</p>
+<p><a name="key_response.cursor"></a><code>cursor</code>: option&lt;<code>string</code>&gt;</p>
 <p>The continuation token to use to fetch the next page of keys. If this is `null`, then
 there are no more keys to fetch.
 </li>
@@ -172,13 +172,13 @@ for more information.</p>
 <h5>Params</h5>
 <ul>
 <li><a name="method_bucket.list_keys.self"></a><code>self</code>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
-<li><a name="method_bucket.list_keys.cursor"></a><code>cursor</code>: option&lt;<code>u64</code>&gt;</li>
+<li><a name="method_bucket.list_keys.cursor"></a><code>cursor</code>: option&lt;<code>string</code>&gt;</li>
 </ul>
 <h5>Return values</h5>
 <ul>
 <li><a name="method_bucket.list_keys.0"></a> result&lt;<a href="#key_response"><a href="#key_response"><code>key-response</code></a></a>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_atomics_0.2.0_draft"></a>Import interface wasi:keyvalue/atomics@0.2.0-draft</h2>
+<h2><a name="wasi:keyvalue_atomics_0.2.0_draft2"></a>Import interface wasi:keyvalue/atomics@0.2.0-draft2</h2>
 <p>A keyvalue interface that provides atomic operations.</p>
 <p>Atomic operations are single, indivisible operations. When a fault causes an atomic operation to
 fail, it will appear to the invoker of the atomic operation that the action either completed
@@ -195,8 +195,48 @@ resource.</p>
 #### <a name="error"></a>`type error`
 [`error`](#error)
 <p>
-----
+#### <a name="cas"></a>`resource cas`
+<p>A handle to a CAS (compare-and-swap) operation.</p>
+<h4><a name="cas_error"></a><code>variant cas-error</code></h4>
+<p>The error returned by a CAS operation</p>
+<h5>Variant Cases</h5>
+<ul>
+<li>
+<p><a name="cas_error.store_error"></a><code>store-error</code>: <a href="#error"><a href="#error"><code>error</code></a></a></p>
+<p>A store error occurred when performing the operation
+</li>
+<li>
+<p><a name="cas_error.cas_failed"></a><code>cas-failed</code>: own&lt;<a href="#cas"><a href="#cas"><code>cas</code></a></a>&gt;</p>
+<p>The CAS operation failed because the value was too old. This returns a new CAS handle
+for easy retries. Implementors MUST return a CAS handle that has been updated to the
+latest version or transaction.
+</li>
+</ul>
+<hr />
 <h3>Functions</h3>
+<h4><a name="static_cas.new"></a><code>[static]cas.new: func</code></h4>
+<p>Construct a new CAS operation. Implementors can map the underlying functionality
+(transactions, versions, etc) as desired.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="static_cas.new.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a name="static_cas.new.key"></a><code>key</code>: <code>string</code></li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="static_cas.new.0"></a> result&lt;own&lt;<a href="#cas"><a href="#cas"><code>cas</code></a></a>&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
+<h4><a name="method_cas.current"></a><code>[method]cas.current: func</code></h4>
+<p>Get the current value of the key (if it exists). This allows for avoiding reads if all
+that is needed to ensure the atomicity of the operation</p>
+<h5>Params</h5>
+<ul>
+<li><a name="method_cas.current.self"></a><code>self</code>: borrow&lt;<a href="#cas"><a href="#cas"><code>cas</code></a></a>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="method_cas.current.0"></a> result&lt;option&lt;list&lt;<code>u8</code>&gt;&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+</ul>
 <h4><a name="increment"></a><code>increment: func</code></h4>
 <p>Atomically increment the value associated with the key in the store by the given delta. It
 returns the new value.</p>
@@ -213,7 +253,19 @@ to the given delta.</p>
 <ul>
 <li><a name="increment.0"></a> result&lt;<code>u64</code>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
-<h2><a name="wasi:keyvalue_batch_0.2.0_draft"></a>Import interface wasi:keyvalue/batch@0.2.0-draft</h2>
+<h4><a name="swap"></a><code>swap: func</code></h4>
+<p>Perform the swap on a CAS operation. This consumes the CAS handle and returns an error if
+the CAS operation failed.</p>
+<h5>Params</h5>
+<ul>
+<li><a name="swap.cas"></a><a href="#cas"><code>cas</code></a>: own&lt;<a href="#cas"><a href="#cas"><code>cas</code></a></a>&gt;</li>
+<li><a name="swap.value"></a><code>value</code>: list&lt;<code>u8</code>&gt;</li>
+</ul>
+<h5>Return values</h5>
+<ul>
+<li><a name="swap.0"></a> result&lt;_, <a href="#cas_error"><a href="#cas_error"><code>cas-error</code></a></a>&gt;</li>
+</ul>
+<h2><a name="wasi:keyvalue_batch_0.2.0_draft2"></a>Import interface wasi:keyvalue/batch@0.2.0-draft2</h2>
 <p>A keyvalue interface that provides batch operations.</p>
 <p>A batch operation is an operation that operates on multiple keys at once.</p>
 <p>Batch operations are useful for reducing network round-trip time. For example, if you want to
