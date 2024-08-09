@@ -38,7 +38,7 @@ interface atomics {
 	/// to the given delta. 
 	///
 	/// If any other error occurs, it returns an `Err(error)`.
-	increment: func(bucket: borrow<bucket>, key: string, delta: u64) -> result<u64, error>;
+	increment: func(bucket: borrow<bucket>, key: string, delta: s64) -> result<s64, error>;
 
 	/// Perform the swap on a CAS operation. This consumes the CAS handle and returns an error if
 	/// the CAS operation failed.

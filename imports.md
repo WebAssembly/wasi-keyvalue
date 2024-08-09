@@ -247,11 +247,11 @@ to the given delta.</p>
 <ul>
 <li><a name="increment.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
 <li><a name="increment.key"></a><code>key</code>: <code>string</code></li>
-<li><a name="increment.delta"></a><code>delta</code>: <code>u64</code></li>
+<li><a name="increment.delta"></a><code>delta</code>: <code>s64</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a name="increment.0"></a> result&lt;<code>u64</code>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a name="increment.0"></a> result&lt;<code>s64</code>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
 <h4><a name="swap"></a><code>swap: func</code></h4>
 <p>Perform the swap on a CAS operation. This consumes the CAS handle and returns an error if
