@@ -1,0 +1,17 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  abi-up-to-date:
+    name: Check ABI files are up-to-date
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: WebAssembly/wit-abi-up-to-date@v22
+      with:
+        wit-bindgen: '0.32.0'
+        worlds: 'imports watch-service'
