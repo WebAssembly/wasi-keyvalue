@@ -304,7 +304,7 @@ list.</p>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a id="get_many.0"></a> result&lt;list&lt;option&lt;(<code>string</code>, list&lt;<code>u8</code>&gt;)&gt;&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a id="get_many.0"></a> result&lt;list&lt;(<code>string</code>, option&lt;list&lt;<code>u8</code>&gt;&gt;)&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
 <h4><a id="set_many"></a><code>set-many: func</code></h4>
 <p>Set the values associated with the keys in the store. If the key already exists in the
