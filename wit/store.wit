@@ -8,7 +8,7 @@
 /// serialization/deserialization overhead to be handled by the key-value store. The value could be
 /// a serialized object from JSON, HTML or vendor-specific data types like AWS S3 objects.
 ///
-/// ## Consistency and Cache Coherency
+/// ## Consistency
 /// 
 /// Data consistency in a key value store refers to the guarantee that once a write operation
 /// completes, all subsequent read operations will return the value that was written.
