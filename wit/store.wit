@@ -7,22 +7,65 @@
 /// ensuring compatibility between different key-value stores. Note: the clients will be expecting
 /// serialization/deserialization overhead to be handled by the key-value store. The value could be
 /// a serialized object from JSON, HTML or vendor-specific data types like AWS S3 objects.
+///
+/// ## Consistency and Cache Coherency
 /// 
 /// Data consistency in a key value store refers to the guarantee that once a write operation
 /// completes, all subsequent read operations will return the value that was written.
 /// 
 /// Any implementation of this interface must have enough consistency to guarantee "reading your
-/// writes." In particular, this means that the client should never get a value that is older than
-/// the one it wrote, but it MAY get a newer value if one was written around the same time. These
-/// guarantees only apply to the same client (which will likely be provided by the host or an
-/// external capability of some kind). In this context a "client" is referring to the caller or
-/// guest that is consuming this interface. Once a write request is committed by a specific client,
-/// all subsequent read requests by the same client will reflect that write or any subsequent
-/// writes. Another client running in a different context may or may not immediately see the result
-/// due to the replication lag. As an example of all of this, if a value at a given key is A, and
-/// the client writes B, then immediately reads, it should get B. If something else writes C in
-/// quick succession, then the client may get C. However, a client running in a separate context may
-/// still see A or B
+/// writes." In particular, this means that a `get` call for a given key on a given `bucket`
+/// resource should never return a value that is older than the the last value written to that key
+/// on the same resource, but it MAY get a newer value if one was written around the same
+/// time. These guarantees only apply to reads and writes on the same resource; they do not hold
+/// across multiple resources -- even when those resources were opened using the same string
+/// identifier by the same component instance.
+///
+/// The following pseudocode example illustrates this behavior.  Note that we assume there is
+/// initially no value set for any key and that no other writes are happening beyond what is shown
+/// in the example.
+///
+/// bucketA = open("foo")
+/// bucketB = open("foo")
+/// bucketA.set("bar", "a")
+/// // The following are guaranteed to succeed:
+/// assert bucketA.get("bar").equals("a")
+/// assert bucketB.get("bar").equals("a") or bucketB.get("bar") is None
+/// // ...whereas this is NOT guaranteed to succeed immediately (but should eventually):
+/// // assert bucketB.get("bar").equals("a")
+///
+/// Once a value is `set` for a given key on a given `bucket`, all subsequent `get` requests on that
+/// same bucket will reflect that write or any subsequent writes. `get` requests using a different
+/// bucket may or may not immediately see the new value due to e.g. cache effects and/or replication
+/// lag.
+///
+/// Continuing the above example:
+///
+/// bucketB.set("bar", "b")
+/// bucketC = open("foo")
+/// value = bucketC.get("bar")
+/// assert value.equals("a") or value.equals("b") or value is None
+///
+/// In other words, the `bucketC` resource may reflect either the most recent write to the `bucketA`
+/// resource, or the one to the `bucketB` resource, or neither, depending on how quickly either of
+/// those writes reached the replica from which the `bucketC` resource is reading.  However,
+/// assuming there are no unrecoverable errors -- such that the state of a replica is irretrievably
+/// lost before it can be propagated -- one of the values ("a" or "b") will eventually be considered
+/// the "latest" and replicated across the system, at which point all three resources will return
+/// that same value.
+///
+/// ## Durability
+///
+/// This interface does not currently make any hard guarantees about the durability of values
+/// stored.  A valid implementation might rely on an in-memory hash table, the contents of which are
+/// lost when the process exits.  Alternatively, another implementation might synchronously persist
+/// all writes to disk -- or even to a quorum of disk-backed nodes at multiple locations -- before
+/// returning a result for a `set` call.  Finally, a third implementation might persist values
+/// asynchronously on a best-effort basis without blocking `set` calls, in which case an I/O error
+/// could occur after the component instance which originally made the call has exited.
+///
+/// Future versions of the `wasi-keyvalue` package may provide ways to query and control the
+/// durability and consistency provided by the backing implementation.
 interface store {
     /// The set of errors which may be raised by functions in this package
     variant error {
