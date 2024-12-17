@@ -10,9 +10,6 @@
 ///
 /// ## Consistency
 /// 
-/// Data consistency in a key value store refers to the guarantee that once a write operation
-/// completes, all subsequent read operations will return the value that was written.
-/// 
 /// Any implementation of this interface must have enough consistency to guarantee "reading your
 /// writes." In particular, this means that a `get` call for a given key on a given `bucket`
 /// resource should never return a value that is older than the the last value written to that key
