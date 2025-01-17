@@ -11,7 +11,12 @@
 /// ## Consistency
 /// 
 /// Any implementation of this interface must have enough consistency to guarantee "reading your
-/// writes." In particular, this means that a `get` call for a given key on a given `bucket`
+/// writes" for read operations on the same `bucket` resource instance.  Reads from `bucket`
+/// resources other than the one used to write are _not_ guaranteed to return the written value
+/// given that the other resources may be connected to other replicas in a distributed system, even
+/// when opened using the same name bucket identifier.
+///
+/// In particular, this means that a `get` call for a given key on a given `bucket`
 /// resource should never return a value that is older than the the last value written to that key
 /// on the same resource, but it MAY get a newer value if one was written around the same
 /// time. These guarantees only apply to reads and writes on the same resource; they do not hold
@@ -31,10 +36,10 @@
 /// // ...whereas this is NOT guaranteed to succeed immediately (but should eventually):
 /// // assert bucketB.get("bar").equals("a")
 ///
-/// Once a value is `set` for a given key on a given `bucket`, all subsequent `get` requests on that
-/// same bucket will reflect that write or any subsequent writes. `get` requests using a different
-/// bucket may or may not immediately see the new value due to e.g. cache effects and/or replication
-/// lag.
+/// Once a value is `set` for a given key on a given `bucket` resource, all subsequent `get`
+/// requests on that same resource will reflect that write or any subsequent writes. `get` requests
+/// using a different bucket may or may not immediately see the new value due to e.g. cache effects
+/// and/or replication lag.
 ///
 /// Continuing the above example:
 ///
@@ -107,7 +112,14 @@ interface store {
     /// 6. Memcached calls a collection of key-value pairs a slab
     /// 7. Azure Cosmos DB calls a collection of key-value pairs a container
     ///
-    /// In this interface, we use the term `bucket` to refer to a collection of key-value pairs
+    /// In this interface, we use the term `bucket` to refer to a connection to a collection of
+    /// key-value pairs.
+    ///
+    /// Note that opening two `bucket` resources using the same identifier may result in connections
+    /// to two separate replicas in a distributed database, and that writes to one of those
+    /// resources are not guaranteed to be readable from the other resource promptly (or ever, in
+    /// the case of a replica failure).  See the `Consistency` section of the `store` interface
+    /// documentation for details.
     resource bucket {
         /// Get the value associated with the specified `key`
         ///
