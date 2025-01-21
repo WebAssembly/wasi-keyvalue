@@ -23,20 +23,55 @@ the common denominator for all data types defined by different key-value stores 
 ensuring compatibility between different key-value stores. Note: the clients will be expecting
 serialization/deserialization overhead to be handled by the key-value store. The value could be
 a serialized object from JSON, HTML or vendor-specific data types like AWS S3 objects.</p>
-<p>Data consistency in a key value store refers to the guarantee that once a write operation
-completes, all subsequent read operations will return the value that was written.</p>
-<p>Any implementation of this interface must have enough consistency to guarantee &quot;reading your
-writes.&quot; In particular, this means that the client should never get a value that is older than
-the one it wrote, but it MAY get a newer value if one was written around the same time. These
-guarantees only apply to the same client (which will likely be provided by the host or an
-external capability of some kind). In this context a &quot;client&quot; is referring to the caller or
-guest that is consuming this interface. Once a write request is committed by a specific client,
-all subsequent read requests by the same client will reflect that write or any subsequent
-writes. Another client running in a different context may or may not immediately see the result
-due to the replication lag. As an example of all of this, if a value at a given key is A, and
-the client writes B, then immediately reads, it should get B. If something else writes C in
-quick succession, then the client may get C. However, a client running in a separate context may
-still see A or B</p>
+<h2>Consistency</h2>
+<p>Any implementation of this interface MUST have enough consistency to guarantee &quot;reading your
+writes&quot; for read operations on the same <a href="#bucket"><code>bucket</code></a> resource instance.  Reads from <a href="#bucket"><code>bucket</code></a>
+resources other than the one used to write are <em>not</em> guaranteed to return the written value
+given that the other resources may be connected to other replicas in a distributed system, even
+when opened using the same bucket identifier.</p>
+<p>In particular, this means that a <code>get</code> call for a given key on a given <a href="#bucket"><code>bucket</code></a>
+resource MUST never return a value that is older than the the last value written to that key
+on the same resource, but it MAY get a newer value if one was written around the same
+time. These guarantees only apply to reads and writes on the same resource; they do not hold
+across multiple resources -- even when those resources were opened using the same string
+identifier by the same component instance.</p>
+<p>The following pseudocode example illustrates this behavior.  Note that we assume there is
+initially no value set for any key and that no other writes are happening beyond what is shown
+in the example.</p>
+<p>bucketA = open(&quot;foo&quot;)
+bucketB = open(&quot;foo&quot;)
+bucketA.set(&quot;bar&quot;, &quot;a&quot;)
+// The following are guaranteed to succeed:
+assert bucketA.get(&quot;bar&quot;).equals(&quot;a&quot;)
+assert bucketB.get(&quot;bar&quot;).equals(&quot;a&quot;) or bucketB.get(&quot;bar&quot;) is None
+// ...whereas this is NOT guaranteed to succeed immediately (but SHOULD eventually):
+// assert bucketB.get(&quot;bar&quot;).equals(&quot;a&quot;)</p>
+<p>Once a value is <code>set</code> for a given key on a given <a href="#bucket"><code>bucket</code></a> resource, all subsequent <code>get</code>
+requests on that same resource will reflect that write or any subsequent writes. <code>get</code> requests
+using a different bucket may or may not immediately see the new value due to e.g. cache effects
+and/or replication lag.</p>
+<p>Continuing the above example:</p>
+<p>bucketB.set(&quot;bar&quot;, &quot;b&quot;)
+bucketC = open(&quot;foo&quot;)
+value = bucketC.get(&quot;bar&quot;)
+assert value.equals(&quot;a&quot;) or value.equals(&quot;b&quot;) or value is None</p>
+<p>In other words, the <code>bucketC</code> resource MAY reflect either the most recent write to the <code>bucketA</code>
+resource, or the one to the <code>bucketB</code> resource, or neither, depending on how quickly either of
+those writes reached the replica from which the <code>bucketC</code> resource is reading.  However,
+assuming there are no unrecoverable errors -- such that the state of a replica is irretrievably
+lost before it can be propagated -- one of the values (&quot;a&quot; or &quot;b&quot;) SHOULD eventually be
+considered the &quot;latest&quot; and replicated across the system, at which point all three resources
+will return that same value.</p>
+<h2>Durability</h2>
+<p>This interface does not currently make any hard guarantees about the durability of values
+stored.  A valid implementation might rely on an in-memory hash table, the contents of which are
+lost when the process exits.  Alternatively, another implementation might synchronously persist
+all writes to disk -- or even to a quorum of disk-backed nodes at multiple locations -- before
+returning a result for a <code>set</code> call.  Finally, a third implementation might persist values
+asynchronously on a best-effort basis without blocking <code>set</code> calls, in which case an I/O error
+could occur after the component instance which originally made the call has exited.</p>
+<p>Future versions of the <code>wasi-keyvalue</code> package may provide ways to query and control the
+durability and consistency provided by the backing implementation.</p>
 <hr />
 <h3>Types</h3>
 <h4><a id="error"></a><code>variant error</code></h4>
@@ -85,7 +120,13 @@ depending on the specific implementation. For example:</p>
 <li>Memcached calls a collection of key-value pairs a slab</li>
 <li>Azure Cosmos DB calls a collection of key-value pairs a container</li>
 </ol>
-<h2>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a collection of key-value pairs</h2>
+<p>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a connection to a collection of
+key-value pairs.</p>
+<h2>Note that opening two <a href="#bucket"><code>bucket</code></a> resources using the same identifier MAY result in connections
+to two separate replicas in a distributed database, and that writes to one of those
+resources are not guaranteed to be readable from the other resource promptly (or ever, in
+the case of a replica failure).  See the <code>Consistency</code> section of the <code>store</code> interface
+documentation for details.</h2>
 <h3>Functions</h3>
 <h4><a id="open"></a><code>open: func</code></h4>
 <p>Get the bucket with the specified identifier.</p>
