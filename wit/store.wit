@@ -10,14 +10,14 @@
 ///
 /// ## Consistency
 /// 
-/// Any implementation of this interface must have enough consistency to guarantee "reading your
+/// Any implementation of this interface MUST have enough consistency to guarantee "reading your
 /// writes" for read operations on the same `bucket` resource instance.  Reads from `bucket`
 /// resources other than the one used to write are _not_ guaranteed to return the written value
 /// given that the other resources may be connected to other replicas in a distributed system, even
-/// when opened using the same name bucket identifier.
+/// when opened using the same bucket identifier.
 ///
 /// In particular, this means that a `get` call for a given key on a given `bucket`
-/// resource should never return a value that is older than the the last value written to that key
+/// resource MUST never return a value that is older than the the last value written to that key
 /// on the same resource, but it MAY get a newer value if one was written around the same
 /// time. These guarantees only apply to reads and writes on the same resource; they do not hold
 /// across multiple resources -- even when those resources were opened using the same string
@@ -33,7 +33,7 @@
 /// // The following are guaranteed to succeed:
 /// assert bucketA.get("bar").equals("a")
 /// assert bucketB.get("bar").equals("a") or bucketB.get("bar") is None
-/// // ...whereas this is NOT guaranteed to succeed immediately (but should eventually):
+/// // ...whereas this is NOT guaranteed to succeed immediately (but SHOULD eventually):
 /// // assert bucketB.get("bar").equals("a")
 ///
 /// Once a value is `set` for a given key on a given `bucket` resource, all subsequent `get`
@@ -48,13 +48,13 @@
 /// value = bucketC.get("bar")
 /// assert value.equals("a") or value.equals("b") or value is None
 ///
-/// In other words, the `bucketC` resource may reflect either the most recent write to the `bucketA`
+/// In other words, the `bucketC` resource MAY reflect either the most recent write to the `bucketA`
 /// resource, or the one to the `bucketB` resource, or neither, depending on how quickly either of
 /// those writes reached the replica from which the `bucketC` resource is reading.  However,
 /// assuming there are no unrecoverable errors -- such that the state of a replica is irretrievably
-/// lost before it can be propagated -- one of the values ("a" or "b") will eventually be considered
-/// the "latest" and replicated across the system, at which point all three resources will return
-/// that same value.
+/// lost before it can be propagated -- one of the values ("a" or "b") SHOULD eventually be
+/// considered the "latest" and replicated across the system, at which point all three resources
+/// will return that same value.
 ///
 /// ## Durability
 ///
@@ -115,7 +115,7 @@ interface store {
     /// In this interface, we use the term `bucket` to refer to a connection to a collection of
     /// key-value pairs.
     ///
-    /// Note that opening two `bucket` resources using the same identifier may result in connections
+    /// Note that opening two `bucket` resources using the same identifier MAY result in connections
     /// to two separate replicas in a distributed database, and that writes to one of those
     /// resources are not guaranteed to be readable from the other resource promptly (or ever, in
     /// the case of a replica failure).  See the `Consistency` section of the `store` interface
