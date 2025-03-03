@@ -24,44 +24,53 @@ ensuring compatibility between different key-value stores. Note: the clients wil
 serialization/deserialization overhead to be handled by the key-value store. The value could be
 a serialized object from JSON, HTML or vendor-specific data types like AWS S3 objects.</p>
 <h2>Consistency</h2>
-<p>Any implementation of this interface MUST have enough consistency to guarantee &quot;reading your
-writes&quot; for read operations on the same <a href="#bucket"><code>bucket</code></a> resource instance.  Reads from <a href="#bucket"><code>bucket</code></a>
-resources other than the one used to write are <em>not</em> guaranteed to return the written value
-given that the other resources may be connected to other replicas in a distributed system, even
-when opened using the same bucket identifier.</p>
-<p>In particular, this means that a <code>get</code> call for a given key on a given <a href="#bucket"><code>bucket</code></a>
-resource MUST never return a value that is older than the the last value written to that key
-on the same resource, but it MAY get a newer value if one was written around the same
-time. These guarantees only apply to reads and writes on the same resource; they do not hold
-across multiple resources -- even when those resources were opened using the same string
-identifier by the same component instance.</p>
-<p>The following pseudocode example illustrates this behavior.  Note that we assume there is
-initially no value set for any key and that no other writes are happening beyond what is shown
-in the example.</p>
-<p>bucketA = open(&quot;foo&quot;)
+<p>An implementation of this interface MUST be eventually consistent, meaning that, after some time
+with no further updates, all replicas in the (potentially distributed) system will eventually
+converge on a consistent state for all values.  This allows replicas to temporarily diverge to
+ensure low latency and high availability.  Implementations based on a centralized or local
+backing store may provide a stronger consistency model, but guest components which are intended
+to be portable to any <code>wasi-keyvalue</code> implementation should not rely on anything stronger than
+eventual consistency.</p>
+<p>Given that each <a href="#bucket"><code>bucket</code></a> resource may represent a connection to a different replica in a
+distributed system, values read for a given key from two different <a href="#bucket"><code>bucket</code></a>s may differ, even if
+those <a href="#bucket"><code>bucket</code></a> resources were opened using the same string identifier.  In addition, consecutive
+operations on a single <a href="#bucket"><code>bucket</code></a> resource may produce temporarily inconsistent results if
+e.g. the implementation is forced to reconnect to a different replica due to a connection
+failure.  For example, a write followed by a read may not return the value just written, even if
+no other recent or subsequent writes have occurred.</p>
+<p>Consider the following pseudocode example (and assume we start with an empty store and no other
+concurrent activity):</p>
+<pre><code>bucketA = open(&quot;foo&quot;)
 bucketB = open(&quot;foo&quot;)
 bucketA.set(&quot;bar&quot;, &quot;a&quot;)
-// The following are guaranteed to succeed:
-assert bucketA.get(&quot;bar&quot;).equals(&quot;a&quot;)
+
+// These are guaranteed to succeed:
+assert bucketA.get(&quot;bar&quot;).equals(&quot;a&quot;) or bucketA.get(&quot;bar&quot;) is None
 assert bucketB.get(&quot;bar&quot;).equals(&quot;a&quot;) or bucketB.get(&quot;bar&quot;) is None
-// ...whereas this is NOT guaranteed to succeed immediately (but SHOULD eventually):
-// assert bucketB.get(&quot;bar&quot;).equals(&quot;a&quot;)</p>
-<p>Once a value is <code>set</code> for a given key on a given <a href="#bucket"><code>bucket</code></a> resource, all subsequent <code>get</code>
-requests on that same resource will reflect that write or any subsequent writes. <code>get</code> requests
-using a different bucket may or may not immediately see the new value due to e.g. cache effects
-and/or replication lag.</p>
-<p>Continuing the above example:</p>
-<p>bucketB.set(&quot;bar&quot;, &quot;b&quot;)
+
+// This is likely to succeed, but not guaranteed; e.g. `bucketA` might need to reconnect to a
+// different replica which hasn't received the above write yet.  It will _eventually_
+// succeed, provided there are no irrecoverable errors which prevent the propagation of the
+// write.
+assert bucketA.get(&quot;bar&quot;).equals(&quot;a&quot;)
+
+// Likewise, this will _eventually_ succeed in the absence of irrecoverable errors:
+assert bucketB.get(&quot;bar&quot;).equals(&quot;a&quot;)
+
+bucketB.set(&quot;bar&quot;, &quot;b&quot;)
 bucketC = open(&quot;foo&quot;)
 value = bucketC.get(&quot;bar&quot;)
-assert value.equals(&quot;a&quot;) or value.equals(&quot;b&quot;) or value is None</p>
+
+// This is guaranteed to succeed:
+assert value.equals(&quot;a&quot;) or value.equals(&quot;b&quot;) or value is None
+</code></pre>
 <p>In other words, the <code>bucketC</code> resource MAY reflect either the most recent write to the <code>bucketA</code>
 resource, or the one to the <code>bucketB</code> resource, or neither, depending on how quickly either of
 those writes reached the replica from which the <code>bucketC</code> resource is reading.  However,
-assuming there are no unrecoverable errors -- such that the state of a replica is irretrievably
-lost before it can be propagated -- one of the values (&quot;a&quot; or &quot;b&quot;) SHOULD eventually be
-considered the &quot;latest&quot; and replicated across the system, at which point all three resources
-will return that same value.</p>
+assuming there are no irrecoverable errors -- such that the state of a replica is irretrievably
+lost before it can be propagated -- one of the values (&quot;a&quot; or &quot;b&quot;) MUST eventually be considered
+the &quot;latest&quot; and replicated across the system, at which point all three resources will return
+that same value.</p>
 <h2>Durability</h2>
 <p>This interface does not currently make any hard guarantees about the durability of values
 stored.  A valid implementation might rely on an in-memory hash table, the contents of which are

@@ -10,51 +10,58 @@
 ///
 /// ## Consistency
 /// 
-/// Any implementation of this interface MUST have enough consistency to guarantee "reading your
-/// writes" for read operations on the same `bucket` resource instance.  Reads from `bucket`
-/// resources other than the one used to write are _not_ guaranteed to return the written value
-/// given that the other resources may be connected to other replicas in a distributed system, even
-/// when opened using the same bucket identifier.
+/// An implementation of this interface MUST be eventually consistent, meaning that, after some time
+/// with no further updates, all replicas in the (potentially distributed) system will eventually
+/// converge on a consistent state for all values.  This allows replicas to temporarily diverge to
+/// ensure low latency and high availability.  Implementations based on a centralized or local
+/// backing store may provide a stronger consistency model, but guest components which are intended
+/// to be portable to any `wasi-keyvalue` implementation should not rely on anything stronger than
+/// eventual consistency.
 ///
-/// In particular, this means that a `get` call for a given key on a given `bucket`
-/// resource MUST never return a value that is older than the the last value written to that key
-/// on the same resource, but it MAY get a newer value if one was written around the same
-/// time. These guarantees only apply to reads and writes on the same resource; they do not hold
-/// across multiple resources -- even when those resources were opened using the same string
-/// identifier by the same component instance.
+/// Given that each `bucket` resource may represent a connection to a different replica in a
+/// distributed system, values read for a given key from two different `bucket`s may differ, even if
+/// those `bucket` resources were opened using the same string identifier.  In addition, consecutive
+/// operations on a single `bucket` resource may produce temporarily inconsistent results if
+/// e.g. the implementation is forced to reconnect to a different replica due to a connection
+/// failure.  For example, a write followed by a read may not return the value just written, even if
+/// no other recent or subsequent writes have occurred.
 ///
-/// The following pseudocode example illustrates this behavior.  Note that we assume there is
-/// initially no value set for any key and that no other writes are happening beyond what is shown
-/// in the example.
+/// Consider the following pseudocode example (and assume we start with an empty store and no other
+/// concurrent activity):
 ///
+/// ```
 /// bucketA = open("foo")
 /// bucketB = open("foo")
 /// bucketA.set("bar", "a")
-/// // The following are guaranteed to succeed:
-/// assert bucketA.get("bar").equals("a")
+///
+/// // These are guaranteed to succeed:
+/// assert bucketA.get("bar").equals("a") or bucketA.get("bar") is None
 /// assert bucketB.get("bar").equals("a") or bucketB.get("bar") is None
-/// // ...whereas this is NOT guaranteed to succeed immediately (but SHOULD eventually):
-/// // assert bucketB.get("bar").equals("a")
 ///
-/// Once a value is `set` for a given key on a given `bucket` resource, all subsequent `get`
-/// requests on that same resource will reflect that write or any subsequent writes. `get` requests
-/// using a different bucket may or may not immediately see the new value due to e.g. cache effects
-/// and/or replication lag.
+/// // This is likely to succeed, but not guaranteed; e.g. `bucketA` might need to reconnect to a
+/// // different replica which hasn't received the above write yet.  It will _eventually_
+/// // succeed, provided there are no irrecoverable errors which prevent the propagation of the
+/// // write.
+/// assert bucketA.get("bar").equals("a")
 ///
-/// Continuing the above example:
+/// // Likewise, this will _eventually_ succeed in the absence of irrecoverable errors:
+/// assert bucketB.get("bar").equals("a")
 ///
 /// bucketB.set("bar", "b")
 /// bucketC = open("foo")
 /// value = bucketC.get("bar")
+///
+/// // This is guaranteed to succeed:
 /// assert value.equals("a") or value.equals("b") or value is None
+/// ```
 ///
 /// In other words, the `bucketC` resource MAY reflect either the most recent write to the `bucketA`
 /// resource, or the one to the `bucketB` resource, or neither, depending on how quickly either of
 /// those writes reached the replica from which the `bucketC` resource is reading.  However,
-/// assuming there are no unrecoverable errors -- such that the state of a replica is irretrievably
-/// lost before it can be propagated -- one of the values ("a" or "b") SHOULD eventually be
-/// considered the "latest" and replicated across the system, at which point all three resources
-/// will return that same value.
+/// assuming there are no irrecoverable errors -- such that the state of a replica is irretrievably
+/// lost before it can be propagated -- one of the values ("a" or "b") MUST eventually be considered
+/// the "latest" and replicated across the system, at which point all three resources will return
+/// that same value.
 ///
 /// ## Durability
 ///
