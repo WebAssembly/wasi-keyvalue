@@ -2,18 +2,18 @@
 <ul>
 <li>Imports:
 <ul>
-<li>interface <a href="#wasi_keyvalue_store_0_2_0_draft2"><code>wasi:keyvalue/store@0.2.0-draft2</code></a></li>
-<li>interface <a href="#wasi_keyvalue_atomics_0_2_0_draft2"><code>wasi:keyvalue/atomics@0.2.0-draft2</code></a></li>
-<li>interface <a href="#wasi_keyvalue_batch_0_2_0_draft2"><code>wasi:keyvalue/batch@0.2.0-draft2</code></a></li>
+<li>interface <a href="#wasi_keyvalue_store_0_2_0_draft3"><code>wasi:keyvalue/store@0.2.0-draft3</code></a></li>
+<li>interface <a href="#wasi_keyvalue_atomics_0_2_0_draft3"><code>wasi:keyvalue/atomics@0.2.0-draft3</code></a></li>
+<li>interface <a href="#wasi_keyvalue_batch_0_2_0_draft3"><code>wasi:keyvalue/batch@0.2.0-draft3</code></a></li>
 </ul>
 </li>
 <li>Exports:
 <ul>
-<li>interface <a href="#wasi_keyvalue_watcher_0_2_0_draft2"><code>wasi:keyvalue/watcher@0.2.0-draft2</code></a></li>
+<li>interface <a href="#wasi_keyvalue_watcher_0_2_0_draft3"><code>wasi:keyvalue/watcher@0.2.0-draft3</code></a></li>
 </ul>
 </li>
 </ul>
-<h2><a id="wasi_keyvalue_store_0_2_0_draft2"></a>Import interface wasi:keyvalue/store@0.2.0-draft2</h2>
+<h2><a id="wasi_keyvalue_store_0_2_0_draft3"></a>Import interface wasi:keyvalue/store@0.2.0-draft3</h2>
 <p>A keyvalue interface that provides eventually consistent key-value operations.</p>
 <p>Each of these operations acts on a single key-value pair.</p>
 <p>The value in the key-value pair is defined as a <code>u8</code> byte array and the intention is that it is
@@ -176,7 +176,7 @@ for more information.</p>
 <ul>
 <li><a id="method_bucket_list_keys.0"></a> result&lt;<a href="#key_response"><a href="#key_response"><code>key-response</code></a></a>, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
-<h2><a id="wasi_keyvalue_atomics_0_2_0_draft2"></a>Import interface wasi:keyvalue/atomics@0.2.0-draft2</h2>
+<h2><a id="wasi_keyvalue_atomics_0_2_0_draft3"></a>Import interface wasi:keyvalue/atomics@0.2.0-draft3</h2>
 <p>A keyvalue interface that provides atomic operations.</p>
 <p>Atomic operations are single, indivisible operations. When a fault causes an atomic operation to
 fail, it will appear to the invoker of the atomic operation that the action either completed
@@ -224,16 +224,17 @@ latest version or transaction.
 <ul>
 <li><a id="static_cas_new.0"></a> result&lt;own&lt;<a href="#cas"><a href="#cas"><code>cas</code></a></a>&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
-<h4><a id="method_cas_current"></a><code>[method]cas.current: func</code></h4>
-<p>Get the current value of the key (if it exists). This allows for avoiding reads if all
-that is needed to ensure the atomicity of the operation</p>
+<h4><a id="static_cas_new_with_read"></a><code>[static]cas.new_with_read: func</code></h4>
+<p>Construct a new CAS operation returning the current value. Implementors can map the underlying functionality
+(transactions, versions, etc) as desired.</p>
 <h5>Params</h5>
 <ul>
-<li><a id="method_cas_current.self"></a><code>self</code>: borrow&lt;<a href="#cas"><a href="#cas"><code>cas</code></a></a>&gt;</li>
+<li><a id="static_cas_new_with_read.bucket"></a><a href="#bucket"><code>bucket</code></a>: borrow&lt;<a href="#bucket"><a href="#bucket"><code>bucket</code></a></a>&gt;</li>
+<li><a id="static_cas_new_with_read.key"></a><code>key</code>: <code>string</code></li>
 </ul>
 <h5>Return values</h5>
 <ul>
-<li><a id="method_cas_current.0"></a> result&lt;option&lt;list&lt;<code>u8</code>&gt;&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
+<li><a id="static_cas_new_with_read.0"></a> result&lt;own&lt;<a href="#cas"><a href="#cas"><code>cas</code></a></a>&gt;, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
 <h4><a id="increment"></a><code>increment: func</code></h4>
 <p>Atomically increment the value associated with the key in the store by the given delta. It
@@ -263,7 +264,7 @@ the CAS operation failed.</p>
 <ul>
 <li><a id="swap.0"></a> result&lt;_, <a href="#cas_error"><a href="#cas_error"><code>cas-error</code></a></a>&gt;</li>
 </ul>
-<h2><a id="wasi_keyvalue_batch_0_2_0_draft2"></a>Import interface wasi:keyvalue/batch@0.2.0-draft2</h2>
+<h2><a id="wasi_keyvalue_batch_0_2_0_draft3"></a>Import interface wasi:keyvalue/batch@0.2.0-draft3</h2>
 <p>A keyvalue interface that provides batch operations.</p>
 <p>A batch operation is an operation that operates on multiple keys at once.</p>
 <p>Batch operations are useful for reducing network round-trip time. For example, if you want to
@@ -342,7 +343,7 @@ fail.</p>
 <ul>
 <li><a id="delete_many.0"></a> result&lt;_, <a href="#error"><a href="#error"><code>error</code></a></a>&gt;</li>
 </ul>
-<h2><a id="wasi_keyvalue_watcher_0_2_0_draft2"></a>Export interface wasi:keyvalue/watcher@0.2.0-draft2</h2>
+<h2><a id="wasi_keyvalue_watcher_0_2_0_draft3"></a>Export interface wasi:keyvalue/watcher@0.2.0-draft3</h2>
 <hr />
 <h3>Types</h3>
 <h4><a id="bucket"></a><code>type bucket</code></h4>
