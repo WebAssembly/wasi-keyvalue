@@ -120,7 +120,8 @@ This proposal was inspired by Dapr's [State API]
 [State API](https://docs.dapr.io/developing-applications/building-blocks/state-management/)
 
 ### Change log
-
+- 2025-03-29:
+  - Modified `atomics` interface signature
 - 2024-03-29:
   - Simplified interfaces to 3 key pieces of functionality: store, atomics, and batch. Also removed
     the use of streams to simplify the starting point of the API
