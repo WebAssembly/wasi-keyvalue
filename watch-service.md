@@ -22,53 +22,39 @@ ensuring compatibility between different key-value stores. Note: the clients wil
 serialization/deserialization overhead to be handled by the key-value store. The value could be
 a serialized object from JSON, HTML or vendor-specific data types like AWS S3 objects.</p>
 <h2>Consistency</h2>
-<p>An implementation of this interface MUST be eventually consistent, meaning that, after some time
-with no further updates, all replicas in the (potentially distributed) system will eventually
-converge on a consistent state for all values.  This allows replicas to temporarily diverge to
-ensure low latency and high availability.  Implementations based on a centralized or local
-backing store may provide a stronger consistency model, but guest components which are intended
-to be portable to any <code>wasi-keyvalue</code> implementation should not rely on anything stronger than
-eventual consistency.</p>
-<p>Given that each <a href="#bucket"><code>bucket</code></a> resource may represent a connection to a different replica in a
-distributed system, values read for a given key from two different <a href="#bucket"><code>bucket</code></a>s may differ, even if
-those <a href="#bucket"><code>bucket</code></a> resources were opened using the same string identifier.  In addition, consecutive
-operations on a single <a href="#bucket"><code>bucket</code></a> resource may produce temporarily inconsistent results if
-e.g. the implementation is forced to reconnect to a different replica due to a connection
-failure.  For example, a write followed by a read may not return the value just written, even if
-no other recent or subsequent writes have occurred.</p>
-<p>Consider the following pseudocode example (and assume we start with an empty store and no other
-concurrent activity):</p>
-<pre><code>bucketA = open(&quot;foo&quot;)
-bucketB = open(&quot;foo&quot;)
-bucketA.set(&quot;bar&quot;, &quot;a&quot;)
-
-// These are guaranteed to succeed:
-assert bucketA.get(&quot;bar&quot;).equals(&quot;a&quot;) or bucketA.get(&quot;bar&quot;) is None
-assert bucketB.get(&quot;bar&quot;).equals(&quot;a&quot;) or bucketB.get(&quot;bar&quot;) is None
-
-// This is likely to succeed, but not guaranteed; e.g. `bucketA` might need to reconnect to a
-// different replica which hasn't received the above write yet.  It will _eventually_
-// succeed, provided there are no irrecoverable errors which prevent the propagation of the
-// write.
-assert bucketA.get(&quot;bar&quot;).equals(&quot;a&quot;)
-
-// Likewise, this will _eventually_ succeed in the absence of irrecoverable errors:
-assert bucketB.get(&quot;bar&quot;).equals(&quot;a&quot;)
-
-bucketB.set(&quot;bar&quot;, &quot;b&quot;)
-bucketC = open(&quot;foo&quot;)
-value = bucketC.get(&quot;bar&quot;)
-
-// This is guaranteed to succeed:
-assert value.equals(&quot;a&quot;) or value.equals(&quot;b&quot;) or value is None
-</code></pre>
-<p>In other words, the <code>bucketC</code> resource MAY reflect either the most recent write to the <code>bucketA</code>
-resource, or the one to the <code>bucketB</code> resource, or neither, depending on how quickly either of
-those writes reached the replica from which the <code>bucketC</code> resource is reading.  However,
-assuming there are no irrecoverable errors -- such that the state of a replica is irretrievably
-lost before it can be propagated -- one of the values (&quot;a&quot; or &quot;b&quot;) MUST eventually be considered
-the &quot;latest&quot; and replicated across the system, at which point all three resources will return
-that same value.</p>
+<p>An implementation of this interface MUST be eventually consistent, but is not required to
+provide any consistency guaranteeds beyond that.  Practically speaking, eventual consistency is
+among the weakest of consistency models, guaranteeing only that values will not be produced
+&quot;from nowhere&quot;, i.e. any value read is guaranteed to have been written to that key at some
+earlier time.  Beyond that, there are no guarantees, and thus a portable component must neither
+expect nor rely on anything else.</p>
+<p>In the future, additional interfaces may be added to <code>wasi:key-value</code> with stronger guarantees,
+which will allow components to express their requirements by importing whichever interface(s)
+provides matching (or stronger) guarantees.  For example, a component requiring strict
+serializability might import a (currently hypothetical) <code>strict-serializable-store</code> interface
+with a similar signature to <code>store</code> but with much stronger semantic guarantees.  On the other
+end, a host might either support implementations of both the <code>store</code> and
+<code>strict-serializable-store</code> or just the former, in which case the host would immediately reject
+a component which imports the unsupported interface.</p>
+<p>Here are a few examples of behavior which an component developer might wish to rely on but which
+are <em>NOT</em> guaranteed by an eventually consistent system (e.g. a distributed system composed of
+multiple replicas, each of which may receive writes in a different order, making no attempt to
+converge on a global consensus):</p>
+<ul>
+<li>
+<p>Read-your-own-writes: eventual consistency does <em>NOT</em> guarantee that a write to a given key
+followed by a read from the same key will retrieve the same or newer value.</p>
+</li>
+<li>
+<p>Convergence: eventual consistency does <em>NOT</em> guarantee that any two replicas will agree on the
+value for a given key -- even after all writes have had time to propagate to all replicas.</p>
+</li>
+<li>
+<p>Last-write-wins: eventual consistency does <em>NOT</em> guarantee that the most recent write will
+take precendence over an earlier one; old writes may overwrite newer ones temporarily or
+permanently.</p>
+</li>
+</ul>
 <h2>Durability</h2>
 <p>This interface does not currently make any hard guarantees about the durability of values
 stored.  A valid implementation might rely on an in-memory hash table, the contents of which are
@@ -77,7 +63,7 @@ all writes to disk -- or even to a quorum of disk-backed nodes at multiple locat
 returning a result for a <code>set</code> call.  Finally, a third implementation might persist values
 asynchronously on a best-effort basis without blocking <code>set</code> calls, in which case an I/O error
 could occur after the component instance which originally made the call has exited.</p>
-<p>Future versions of the <code>wasi-keyvalue</code> package may provide ways to query and control the
+<p>Future versions of the <code>wasi:keyvalue</code> package may provide ways to query and control the
 durability and consistency provided by the backing implementation.</p>
 <hr />
 <h3>Types</h3>
@@ -116,7 +102,7 @@ there are no more keys to fetch.
 <h4><a id="bucket"></a><code>resource bucket</code></h4>
 <p>A bucket is a collection of key-value pairs. Each key-value pair is stored as a entry in the
 bucket, and the bucket itself acts as a collection of all these entries.</p>
-<p>It is worth noting that the exact terminology for bucket in key-value stores can very
+<p>It is worth noting that the exact terminology for bucket in key-value stores can vary
 depending on the specific implementation. For example:</p>
 <ol>
 <li>Amazon DynamoDB calls a collection of key-value pairs a table</li>
@@ -132,8 +118,8 @@ key-value pairs.</p>
 <h2>Note that opening two <a href="#bucket"><code>bucket</code></a> resources using the same identifier MAY result in connections
 to two separate replicas in a distributed database, and that writes to one of those
 resources are not guaranteed to be readable from the other resource promptly (or ever, in
-the case of a replica failure).  See the <code>Consistency</code> section of the <code>store</code> interface
-documentation for details.</h2>
+the case of a replica failure or message reordering).  See the <code>Consistency</code> section of the
+<code>store</code> interface documentation for details.</h2>
 <h3>Functions</h3>
 <h4><a id="open"></a><code>open: func</code></h4>
 <p>Get the bucket with the specified identifier.</p>

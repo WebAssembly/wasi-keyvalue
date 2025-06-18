@@ -10,58 +10,36 @@
 ///
 /// ## Consistency
 /// 
-/// An implementation of this interface MUST be eventually consistent, meaning that, after some time
-/// with no further updates, all replicas in the (potentially distributed) system will eventually
-/// converge on a consistent state for all values.  This allows replicas to temporarily diverge to
-/// ensure low latency and high availability.  Implementations based on a centralized or local
-/// backing store may provide a stronger consistency model, but guest components which are intended
-/// to be portable to any `wasi-keyvalue` implementation should not rely on anything stronger than
-/// eventual consistency.
+/// An implementation of this interface MUST be eventually consistent, but is not required to
+/// provide any consistency guaranteeds beyond that.  Practically speaking, eventual consistency is
+/// among the weakest of consistency models, guaranteeing only that values will not be produced
+/// "from nowhere", i.e. any value read is guaranteed to have been written to that key at some
+/// earlier time.  Beyond that, there are no guarantees, and thus a portable component must neither
+/// expect nor rely on anything else.
 ///
-/// Given that each `bucket` resource may represent a connection to a different replica in a
-/// distributed system, values read for a given key from two different `bucket`s may differ, even if
-/// those `bucket` resources were opened using the same string identifier.  In addition, consecutive
-/// operations on a single `bucket` resource may produce temporarily inconsistent results if
-/// e.g. the implementation is forced to reconnect to a different replica due to a connection
-/// failure.  For example, a write followed by a read may not return the value just written, even if
-/// no other recent or subsequent writes have occurred.
+/// In the future, additional interfaces may be added to `wasi:key-value` with stronger guarantees,
+/// which will allow components to express their requirements by importing whichever interface(s)
+/// provides matching (or stronger) guarantees.  For example, a component requiring strict
+/// serializability might import a (currently hypothetical) `strict-serializable-store` interface
+/// with a similar signature to `store` but with much stronger semantic guarantees.  On the other
+/// end, a host might either support implementations of both the `store` and
+/// `strict-serializable-store` or just the former, in which case the host would immediately reject
+/// a component which imports the unsupported interface.
 ///
-/// Consider the following pseudocode example (and assume we start with an empty store and no other
-/// concurrent activity):
+/// Here are a few examples of behavior which an component developer might wish to rely on but which
+/// are _NOT_ guaranteed by an eventually consistent system (e.g. a distributed system composed of
+/// multiple replicas, each of which may receive writes in a different order, making no attempt to
+/// converge on a global consensus):
 ///
-/// ```
-/// bucketA = open("foo")
-/// bucketB = open("foo")
-/// bucketA.set("bar", "a")
+/// - Read-your-own-writes: eventual consistency does _NOT_ guarantee that a write to a given key
+/// followed by a read from the same key will retrieve the same or newer value.
 ///
-/// // These are guaranteed to succeed:
-/// assert bucketA.get("bar").equals("a") or bucketA.get("bar") is None
-/// assert bucketB.get("bar").equals("a") or bucketB.get("bar") is None
+/// - Convergence: eventual consistency does _NOT_ guarantee that any two replicas will agree on the
+/// value for a given key -- even after all writes have had time to propagate to all replicas.
 ///
-/// // This is likely to succeed, but not guaranteed; e.g. `bucketA` might need to reconnect to a
-/// // different replica which hasn't received the above write yet.  It will _eventually_
-/// // succeed, provided there are no irrecoverable errors which prevent the propagation of the
-/// // write.
-/// assert bucketA.get("bar").equals("a")
-///
-/// // Likewise, this will _eventually_ succeed in the absence of irrecoverable errors:
-/// assert bucketB.get("bar").equals("a")
-///
-/// bucketB.set("bar", "b")
-/// bucketC = open("foo")
-/// value = bucketC.get("bar")
-///
-/// // This is guaranteed to succeed:
-/// assert value.equals("a") or value.equals("b") or value is None
-/// ```
-///
-/// In other words, the `bucketC` resource MAY reflect either the most recent write to the `bucketA`
-/// resource, or the one to the `bucketB` resource, or neither, depending on how quickly either of
-/// those writes reached the replica from which the `bucketC` resource is reading.  However,
-/// assuming there are no irrecoverable errors -- such that the state of a replica is irretrievably
-/// lost before it can be propagated -- one of the values ("a" or "b") MUST eventually be considered
-/// the "latest" and replicated across the system, at which point all three resources will return
-/// that same value.
+/// - Last-write-wins: eventual consistency does _NOT_ guarantee that the most recent write will
+/// take precendence over an earlier one; old writes may overwrite newer ones temporarily or
+/// permanently.
 ///
 /// ## Durability
 ///
@@ -73,7 +51,7 @@
 /// asynchronously on a best-effort basis without blocking `set` calls, in which case an I/O error
 /// could occur after the component instance which originally made the call has exited.
 ///
-/// Future versions of the `wasi-keyvalue` package may provide ways to query and control the
+/// Future versions of the `wasi:keyvalue` package may provide ways to query and control the
 /// durability and consistency provided by the backing implementation.
 interface store {
     /// The set of errors which may be raised by functions in this package
@@ -108,7 +86,7 @@ interface store {
     /// A bucket is a collection of key-value pairs. Each key-value pair is stored as a entry in the
     /// bucket, and the bucket itself acts as a collection of all these entries.
     ///
-    /// It is worth noting that the exact terminology for bucket in key-value stores can very
+    /// It is worth noting that the exact terminology for bucket in key-value stores can vary
     /// depending on the specific implementation. For example:
     ///
     /// 1. Amazon DynamoDB calls a collection of key-value pairs a table
@@ -125,8 +103,8 @@ interface store {
     /// Note that opening two `bucket` resources using the same identifier MAY result in connections
     /// to two separate replicas in a distributed database, and that writes to one of those
     /// resources are not guaranteed to be readable from the other resource promptly (or ever, in
-    /// the case of a replica failure).  See the `Consistency` section of the `store` interface
-    /// documentation for details.
+    /// the case of a replica failure or message reordering).  See the `Consistency` section of the
+    /// `store` interface documentation for details.
     resource bucket {
         /// Get the value associated with the specified `key`
         ///
