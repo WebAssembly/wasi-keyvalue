@@ -28,7 +28,7 @@ among the weakest of consistency models, guaranteeing only that values will not 
 &quot;from nowhere&quot;, i.e. any value read is guaranteed to have been written to that key at some
 earlier time.  Beyond that, there are no guarantees, and thus a portable component must neither
 expect nor rely on anything else.</p>
-<p>In the future, additional interfaces may be added to <code>wasi:key-value</code> with stronger guarantees,
+<p>In the future, additional interfaces may be added to <code>wasi:keyvalue</code> with stronger guarantees,
 which will allow components to express their requirements by importing whichever interface(s)
 provides matching (or stronger) guarantees.  For example, a component requiring strict
 serializability might import a (currently hypothetical) <code>strict-serializable-store</code> interface
@@ -36,7 +36,7 @@ with a similar signature to <code>store</code> but with much stronger semantic g
 end, a host might either support implementations of both the <code>store</code> and
 <code>strict-serializable-store</code> or just the former, in which case the host would immediately reject
 a component which imports the unsupported interface.</p>
-<p>Here are a few examples of behavior which an component developer might wish to rely on but which
+<p>Here are a few examples of behavior which a component developer might wish to rely on but which
 are <em>NOT</em> guaranteed by an eventually consistent system (e.g. a distributed system composed of
 multiple replicas, each of which may receive writes in a different order, making no attempt to
 converge on a global consensus):</p>
@@ -63,8 +63,8 @@ all writes to disk -- or even to a quorum of disk-backed nodes at multiple locat
 returning a result for a <code>set</code> call.  Finally, a third implementation might persist values
 asynchronously on a best-effort basis without blocking <code>set</code> calls, in which case an I/O error
 could occur after the component instance which originally made the call has exited.</p>
-<p>Future versions of the <code>wasi:keyvalue</code> package may provide ways to query and control the
-durability and consistency provided by the backing implementation.</p>
+<p>Future versions of <code>wasi:keyvalue</code> may provide ways to query and control the durability and
+consistency provided by the backing implementation.</p>
 <hr />
 <h3>Types</h3>
 <h4><a id="error"></a><code>variant error</code></h4>

@@ -17,7 +17,7 @@
 /// earlier time.  Beyond that, there are no guarantees, and thus a portable component must neither
 /// expect nor rely on anything else.
 ///
-/// In the future, additional interfaces may be added to `wasi:key-value` with stronger guarantees,
+/// In the future, additional interfaces may be added to `wasi:keyvalue` with stronger guarantees,
 /// which will allow components to express their requirements by importing whichever interface(s)
 /// provides matching (or stronger) guarantees.  For example, a component requiring strict
 /// serializability might import a (currently hypothetical) `strict-serializable-store` interface
@@ -26,7 +26,7 @@
 /// `strict-serializable-store` or just the former, in which case the host would immediately reject
 /// a component which imports the unsupported interface.
 ///
-/// Here are a few examples of behavior which an component developer might wish to rely on but which
+/// Here are a few examples of behavior which a component developer might wish to rely on but which
 /// are _NOT_ guaranteed by an eventually consistent system (e.g. a distributed system composed of
 /// multiple replicas, each of which may receive writes in a different order, making no attempt to
 /// converge on a global consensus):
@@ -51,8 +51,8 @@
 /// asynchronously on a best-effort basis without blocking `set` calls, in which case an I/O error
 /// could occur after the component instance which originally made the call has exited.
 ///
-/// Future versions of the `wasi:keyvalue` package may provide ways to query and control the
-/// durability and consistency provided by the backing implementation.
+/// Future versions of `wasi:keyvalue` may provide ways to query and control the durability and
+/// consistency provided by the backing implementation.
 interface store {
     /// The set of errors which may be raised by functions in this package
     variant error {
