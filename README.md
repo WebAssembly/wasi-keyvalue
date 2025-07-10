@@ -11,7 +11,6 @@ WASI Key-Value is currently in [Phase 2](https://github.com/WebAssembly/WASI/blo
 - Dan Chiarlone
 - David Justice
 - Jiaxiao Zhou
-- Taylor Thomas
 
 ### Portability Criteria
 
