@@ -21,20 +21,50 @@ the common denominator for all data types defined by different key-value stores 
 ensuring compatibility between different key-value stores. Note: the clients will be expecting
 serialization/deserialization overhead to be handled by the key-value store. The value could be
 a serialized object from JSON, HTML or vendor-specific data types like AWS S3 objects.</p>
-<p>Data consistency in a key value store refers to the guarantee that once a write operation
-completes, all subsequent read operations will return the value that was written.</p>
-<p>Any implementation of this interface must have enough consistency to guarantee &quot;reading your
-writes.&quot; In particular, this means that the client should never get a value that is older than
-the one it wrote, but it MAY get a newer value if one was written around the same time. These
-guarantees only apply to the same client (which will likely be provided by the host or an
-external capability of some kind). In this context a &quot;client&quot; is referring to the caller or
-guest that is consuming this interface. Once a write request is committed by a specific client,
-all subsequent read requests by the same client will reflect that write or any subsequent
-writes. Another client running in a different context may or may not immediately see the result
-due to the replication lag. As an example of all of this, if a value at a given key is A, and
-the client writes B, then immediately reads, it should get B. If something else writes C in
-quick succession, then the client may get C. However, a client running in a separate context may
-still see A or B</p>
+<h2>Consistency</h2>
+<p>An implementation of this interface MUST be eventually consistent, but is not required to
+provide any consistency guaranteeds beyond that.  Practically speaking, eventual consistency is
+among the weakest of consistency models, guaranteeing only that values will not be produced
+&quot;from nowhere&quot;, i.e. any value read is guaranteed to have been written to that key at some
+earlier time.  Beyond that, there are no guarantees, and thus a portable component must neither
+expect nor rely on anything else.</p>
+<p>In the future, additional interfaces may be added to <code>wasi:keyvalue</code> with stronger guarantees,
+which will allow components to express their requirements by importing whichever interface(s)
+provides matching (or stronger) guarantees.  For example, a component requiring strict
+serializability might import a (currently hypothetical) <code>strict-serializable-store</code> interface
+with a similar signature to <code>store</code> but with much stronger semantic guarantees.  On the other
+end, a host might either support implementations of both the <code>store</code> and
+<code>strict-serializable-store</code> or just the former, in which case the host would immediately reject
+a component which imports the unsupported interface.</p>
+<p>Here are a few examples of behavior which a component developer might wish to rely on but which
+are <em>NOT</em> guaranteed by an eventually consistent system (e.g. a distributed system composed of
+multiple replicas, each of which may receive writes in a different order, making no attempt to
+converge on a global consensus):</p>
+<ul>
+<li>
+<p>Read-your-own-writes: eventual consistency does <em>NOT</em> guarantee that a write to a given key
+followed by a read from the same key will retrieve the same or newer value.</p>
+</li>
+<li>
+<p>Convergence: eventual consistency does <em>NOT</em> guarantee that any two replicas will agree on the
+value for a given key -- even after all writes have had time to propagate to all replicas.</p>
+</li>
+<li>
+<p>Last-write-wins: eventual consistency does <em>NOT</em> guarantee that the most recent write will
+take precendence over an earlier one; old writes may overwrite newer ones temporarily or
+permanently.</p>
+</li>
+</ul>
+<h2>Durability</h2>
+<p>This interface does not currently make any hard guarantees about the durability of values
+stored.  A valid implementation might rely on an in-memory hash table, the contents of which are
+lost when the process exits.  Alternatively, another implementation might synchronously persist
+all writes to disk -- or even to a quorum of disk-backed nodes at multiple locations -- before
+returning a result for a <code>set</code> call.  Finally, a third implementation might persist values
+asynchronously on a best-effort basis without blocking <code>set</code> calls, in which case an I/O error
+could occur after the component instance which originally made the call has exited.</p>
+<p>Future versions of <code>wasi:keyvalue</code> may provide ways to query and control the durability and
+consistency provided by the backing implementation.</p>
 <hr />
 <h3>Types</h3>
 <h4><a id="error"></a><code>variant error</code></h4>
@@ -72,7 +102,7 @@ there are no more keys to fetch.
 <h4><a id="bucket"></a><code>resource bucket</code></h4>
 <p>A bucket is a collection of key-value pairs. Each key-value pair is stored as a entry in the
 bucket, and the bucket itself acts as a collection of all these entries.</p>
-<p>It is worth noting that the exact terminology for bucket in key-value stores can very
+<p>It is worth noting that the exact terminology for bucket in key-value stores can vary
 depending on the specific implementation. For example:</p>
 <ol>
 <li>Amazon DynamoDB calls a collection of key-value pairs a table</li>
@@ -83,7 +113,13 @@ depending on the specific implementation. For example:</p>
 <li>Memcached calls a collection of key-value pairs a slab</li>
 <li>Azure Cosmos DB calls a collection of key-value pairs a container</li>
 </ol>
-<h2>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a collection of key-value pairs</h2>
+<p>In this interface, we use the term <a href="#bucket"><code>bucket</code></a> to refer to a connection to a collection of
+key-value pairs.</p>
+<h2>Note that opening two <a href="#bucket"><code>bucket</code></a> resources using the same identifier MAY result in connections
+to two separate replicas in a distributed database, and that writes to one of those
+resources are not guaranteed to be readable from the other resource promptly (or ever, in
+the case of a replica failure or message reordering).  See the <code>Consistency</code> section of the
+<code>store</code> interface documentation for details.</h2>
 <h3>Functions</h3>
 <h4><a id="open"></a><code>open: func</code></h4>
 <p>Get the bucket with the specified identifier.</p>
