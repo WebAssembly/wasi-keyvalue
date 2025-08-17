@@ -16,19 +16,30 @@ interface atomics {
 		/// A store error occurred when performing the operation
 		store-error(error),
 		/// The CAS operation failed because the value was too old. This returns a new CAS handle
-		/// for easy retries. Implementors MUST return a CAS handle that has been updated to the
+		/// for easy retries, as well as the current value for comparison. Implementors MUST return a CAS handle that has been updated to the
 		/// latest version or transaction.
-		cas-failed(cas),
+		cas-failed(tuple<cas,option<list<u8>>>),
 	}
 
 	/// A handle to a CAS (compare-and-swap) operation.
 	resource cas {
-		/// Construct a new CAS operation. Implementors can map the underlying functionality
-		/// (transactions, versions, etc) as desired.
+		/// Construct a new CAS handle for `key`.
+		///
+		/// This handle should guarantee that a subsequent `swap` operation will operate on data that has
+		/// not been modified since this call. If that condition is not met, `swap` should return `error`.
+		///
+		/// Note that this handle does not necessarily guarantee that no other operations occur on the key
+		/// after the handle is created, only that `error` is returned when calling `swap` if other operations did occur.
 		new: static func(bucket: borrow<bucket>, key: string) -> result<cas, error>;
-		/// Get the current value of the key (if it exists). This allows for avoiding reads if all
-		/// that is needed to ensure the atomicity of the operation
-		current: func() -> result<option<list<u8>>, error>;
+
+		/// Construct a new CAS handle returning the current value of `key`.
+		///
+		/// This handle should guarantee that a subsequent `swap` operation will operate on data that has
+		/// not been modified since this call. If that condition is not met, `swap` should return `error`.
+		///
+		/// Note that this handle does not necessarily guarantee that no other operations occur on the key
+		/// after the handle is created, only that `error` is returned when calling `swap` if other operations did occur.
+		new-with-read: static func(bucket: borrow<bucket>, key: string) -> result<tuple<cas, option<list<u8>>>, error>;
 	}
 
   	/// Atomically increment the value associated with the key in the store by the given delta. It
