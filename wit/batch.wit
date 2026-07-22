@@ -1,11 +1,15 @@
 /// A keyvalue interface that provides batch operations.
 /// 
-/// A batch operation is an operation that operates on multiple keys at once.
+/// A batch operation is an operation that operates on multiple unique keys at once.
 /// 
 /// Batch operations are useful for reducing network round-trip time. For example, if you want to
-/// get the values associated with 100 keys, you can either do 100 get operations or you can do 1
-/// batch get operation. The batch operation is faster because it only needs to make 1 network call
-/// instead of 100.
+/// get the values associated with 100 unique keys, you can either do 100 get operations or you can
+/// do 1 batch get operation. The batch operation is faster because it only needs to make 1 network
+/// call instead of 100.
+///
+/// Callers SHOULD NOT pass duplicate keys to a batch operation. This interface does not
+/// define how duplicate keys are handled: implementations are not required to detect or
+/// reject them, and the resulting behavior may differ between backing stores.
 /// 
 /// A batch operation does not guarantee atomicity, meaning that if the batch operation fails, some
 /// of the keys may have been modified and some may not. 
@@ -20,7 +24,7 @@
 interface batch {
     use store.{bucket, error};
 
-    /// Get the key-value pairs associated with the keys in the store. It returns a list of
+    /// Get the key-value pairs associated with the unique keys in the store. It returns a list of
     /// key-value pairs.
     ///
     /// If any of the keys do not exist in the store, it returns a `none` value for that pair in the
@@ -31,7 +35,7 @@ interface batch {
     /// If any other error occurs, it returns an `Err(error)`.
     get-many: func(bucket: borrow<bucket>, keys: list<string>) -> result<list<option<tuple<string, list<u8>>>>, error>;
 
-    /// Set the values associated with the keys in the store. If the key already exists in the
+    /// Set the values associated with the unique keys in the store. If the key already exists in the
     /// store, it overwrites the value. 
     /// 
     /// Note that the key-value pairs are not guaranteed to be set in the order they are provided. 
@@ -46,7 +50,7 @@ interface batch {
     /// Other concurrent operations may also be able to see the partial results.
     set-many: func(bucket: borrow<bucket>, key-values: list<tuple<string, list<u8>>>) -> result<_, error>;
 
-    /// Delete the key-value pairs associated with the keys in the store.
+    /// Delete the key-value pairs associated with the unique keys in the store.
     /// 
     /// Note that the key-value pairs are not guaranteed to be deleted in the order they are
     /// provided.
