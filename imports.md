@@ -292,9 +292,9 @@ resource.</p>
 <h3>Functions</h3>
 <h4><a id="get_many"></a><code>get-many: func</code></h4>
 <p>Get the key-value pairs associated with the keys in the store. It returns a list of
-key-value pairs.</p>
-<p>If any of the keys do not exist in the store, it returns a <code>none</code> value for that pair in the
-list.</p>
+key-value pairs, one for each key requested.</p>
+<p>The returned list contains an entry for every key provided. If a key does not exist in the
+store, its corresponding value will be <code>none</code>.</p>
 <p>MAY show an out-of-date value if there are concurrent writes to the store.</p>
 <p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
