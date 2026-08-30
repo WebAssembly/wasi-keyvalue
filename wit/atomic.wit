@@ -37,6 +37,9 @@ interface atomics {
 	/// If the key does not exist in the store, it creates a new key-value pair with the value set
 	/// to the given delta. 
 	///
+	/// The result of using both `increment` and any other operation in this spec with the same key
+	/// is implementation-dependent.
+	///
 	/// If any other error occurs, it returns an `Err(error)`.
 	increment: func(bucket: borrow<bucket>, key: string, delta: s64) -> result<s64, error>;
 

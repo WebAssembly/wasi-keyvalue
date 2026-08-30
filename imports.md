@@ -242,6 +242,8 @@ that is needed to ensure the atomicity of the operation</p>
 returns the new value.</p>
 <p>If the key does not exist in the store, it creates a new key-value pair with the value set
 to the given delta.</p>
+<p>The result of using both <a href="#increment"><code>increment</code></a> and any other operation in this spec with the same key
+is implementation-dependent.</p>
 <p>If any other error occurs, it returns an <code>Err(error)</code>.</p>
 <h5>Params</h5>
 <ul>
